@@ -18,3 +18,14 @@ for (index = 0; index < totalDevice; index++) {
 }
 
 2. parsing payload 
+
+forwardflow 
+
+battery 2,8 - 3,6 = 0-100% 
+< 2,8 = drop 
+0,8 
+
+signal status 
+buruk = rssi ( -119 > x > -120) , snr ( -5 > x)
+sedang = rssi (-115 > x > -118), snr (-2>x>-5)
+bagus = rssi ( x < -115) , snr (-2 < x)

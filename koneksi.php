@@ -2,7 +2,7 @@
     $host = 'localhost';
     $user = 'root';
     $pass = '';
-    $db = "watermeter_db";
+    $db = 'watermeter_db';
 
     $conn = mysqli_connect($host, $user, $pass, $db) or die(mysqli_error($conn));
   
