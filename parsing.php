@@ -1,13 +1,13 @@
 <?php
-$b = $_POST[""];
-$data0 = strtoupper(substr($b, 0, 52));
+$b = $_POST["6f04180822682e60030000000000485f0300d05e03009e5e03002b3c000d04151701e80710002450"];
+$data0 = strtoupper(substr($b, 0, 58));
 $data1 = strtoupper(substr($b, 0, 2));
-$data2 = substr($b, 2, 10);
-$data3 = substr($b, 12, 8);
-$data4 = strtoupper(substr($b, 20, 8));
-$data5 = substr($b, 28, 8);
-$data6 = substr($b, 36, 8);
-$data7 = substr($b, 44, 8);
+$data2 = substr($b, 2, 12);
+$data3 = substr($b, 12, 20);
+$data4 = strtoupper(substr($b, 20, 28));
+$data5 = substr($b, 28, 36);
+$data6 = substr($b, 36, 44);
+$data7 = substr($b, 44, 52);
 
 $formatted_data2 = implode(' ', str_split($data2, 2));
 
