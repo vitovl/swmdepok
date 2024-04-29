@@ -54,6 +54,7 @@ function saveDataAntaresByPayload() {
         $data2 = substr($payloadValue, 16, 8);
         $data3 = strtoupper(substr($payloadValue, 54, 2));
 
+        
         $hex_data2 = implode(' ', array_map(function ($item) {
             return sprintf("%02X", hexdec($item));
         }, str_split($data2, 2)));
@@ -74,6 +75,7 @@ function saveDataAntaresByPayload() {
             $percentage = (($decimal_data3 - 2.8) / (3.6 - 2.8)) * 100; // Menghitung persentase
         }
 
+
         // Menentukan status baterai
         if ($percentage == 0) {
             $status = "Drop";
@@ -85,10 +87,9 @@ function saveDataAntaresByPayload() {
         $signalStatus = getSignalStatus($RSSI, $SNR);
 
         // Simpan data ke tabel hasildata_depok
-        $query_insert = "INSERT INTO hasildata_depok (serial_number, payload, signal_status, rateDataFlow, batteryStatus, lastUpdate) 
-                         VALUES ('$serialNumber', '$payloadValue', '$signalStatus', '$decimal_data2', '$status', '$timestamp')";
+        $insertSql= "INSERT INTO hasildata_depok (serial_number, payload, signal_status, rateDataFlow, batteryStatus, lastUpdate) VALUES ('$serialNumber', '$payloadValue', '$signalStatus', '$decimal_data2', '$status', '$timestamp')";
 
-        $sqlInsert = mysqli_query($conn, $query_insert);
+        $sqlInsert = mysqli_query($conn, $insertSql);
         if ($sqlInsert) {
             echo "Data berhasil disimpan ke database hasildata_depok\n";
         } else {
@@ -100,3 +101,26 @@ function saveDataAntaresByPayload() {
 saveDataAntaresByPayload();
 
 ?>
+
+<!-- 
+$result = $conn->query($sql1);
+$last_data = 0;
+$data_baterai = array();
+while($row = $result->fetch_assoc()) {
+    $data_baterai[] = $row['data_baterai'];
+    $last_data = $row['data_baterai'];
+}
+
+$diff_sum = 0;
+for($i = max(0, count($data_baterai) - 30); $i < count($data_baterai) - 1; $i++) {
+    $diff = $data_baterai[$i + 1] - $data_baterai[$i];
+    $diff_sum += $diff;
+}
+//echo "Total Baterai: " . $diff_sum;
+
+if($diff_sum >= -0.2) {
+    echo "Stabil";
+} elseif($diff_sum < -0.2) {
+    echo "Drop";
+} -->
+
