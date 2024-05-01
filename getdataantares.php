@@ -1,6 +1,7 @@
 <?php
 
 include 'koneksi.php';
+// include 'getdeviceantares.php';
 include 'getpayloadantares.php';
 
 $status= '';
@@ -86,7 +87,7 @@ function saveDataAntaresByPayload() {
 
         $sqlInsert = mysqli_query($conn, $insertSql);
         if ($sqlInsert) {
-            echo "Data berhasil disimpan ke database hasildata_depok\n";
+            echo "Data berhasil disimpan ke databasee hasildata_depok\n";
         } else {
             echo "Error saving new data to database for device $serialNumber: " . mysqli_error($conn) . "\n";
         }
@@ -135,7 +136,7 @@ function updateDataAntares($serialNumber, $payloadValue, $timestamp, $RSSI, $SNR
     $updateResult = mysqli_query($conn, $updateQuery);
 
     if ($updateResult) {
-        echo "Data successfully updated in the database for device $serialNumber.\n";
+        echo "Data successfully updated in the databasee for device $serialNumber.\n";
     } else {
         echo "Error updating data in the database for device $serialNumber: " . mysqli_error($conn) . "\n";
     }
@@ -143,7 +144,8 @@ function updateDataAntares($serialNumber, $payloadValue, $timestamp, $RSSI, $SNR
 
 
 // Panggil fungsi untuk menyimpan data ke tabel payload_device_depok
-saveDataAntaresByDeviceId();
+// getAllDevicesData();
+// saveDataAntaresByDeviceId();
 saveDataAntaresByPayload(); // Panggil fungsi untuk menyimpan data baru
 
 ?>

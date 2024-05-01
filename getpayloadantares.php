@@ -4,32 +4,36 @@ include 'koneksi.php';
 function getSerialNumbersFromNewTable() {
     global $conn;
     $serialNumbers = [];
-    // Query untuk mendapatkan serial number dari tabel baru di database
+
+    // Query untuk mendapatkan semua serial number dari tabel device_depok
     $query = "SELECT serial_number FROM device_depok";
     $result = mysqli_query($conn, $query);
+
     if (!$result) {
         echo "Error: " . mysqli_error($conn);
         return [];
     }
+
     while ($row = mysqli_fetch_assoc($result)) {
         $serialNumbers[] = $row['serial_number'];
     }
+
     return $serialNumbers;
 }
 
 function saveDataAntaresByDeviceId() {
     global $conn;
     $serialNumbers = getSerialNumbersFromNewTable();
+    $headers = [
+        'X-M2M-Origin: 22d7ebb917b00bc8:b65db7ab728a0929',
+        'Content-Type: application/json;ty=4',
+        'Accept: application/json'
+    ];
     
+    $ch = curl_init();  
     foreach ($serialNumbers as $serialNumber) {
         $deviceUrl = "https://platform.antares.id:8443/~/antares-cse/antares-id/SmartWaterMeter_Depok/$serialNumber/la";
-        $headers = [
-            'X-M2M-Origin: 22d7ebb917b00bc8:b65db7ab728a0929',
-            'Content-Type: application/json;ty=4',
-            'Accept: application/json'
-        ];
-        
-        $ch = curl_init();
+
         curl_setopt($ch, CURLOPT_URL, $deviceUrl);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -100,9 +104,6 @@ function convertAntaresTimeToTimestamp($antaresTime) {
     return date('Y-m-d H:i:s', $timestamp); // Mengembalikan timestamp dalam format yang sesuai
 }   
 
-?>
-
-<?php
 // Panggil fungsi untuk menyimpan data ke database
 saveDataAntaresByDeviceId();
 ?>
