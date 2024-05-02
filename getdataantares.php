@@ -136,7 +136,7 @@ function updateDataAntares($serialNumber, $payloadValue, $timestamp, $RSSI, $SNR
     $updateResult = mysqli_query($conn, $updateQuery);
 
     if ($updateResult) {
-        echo "Data successfully updated in the databasee for device $serialNumber.\n";
+        echo "Data successfully updated in the databaseeeee for device $serialNumber.\n";
     } else {
         echo "Error updating data in the database for device $serialNumber: " . mysqli_error($conn) . "\n";
     }
