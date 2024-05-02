@@ -70,7 +70,7 @@ function saveDataAntaresByDeviceId() {
                 $updateSql = mysqli_query($conn, $updateQuery);
 
                 if ($updateSql) {
-                    echo "Data successfully updated in the database for device $serialNumber.\n";
+                    echo "Data payload successfully updated in the database for device $serialNumber.\n";
                 } else {
                     echo "Error updating data in the database for device $serialNumber: " . mysqli_error($conn) . "\n";
                 }
