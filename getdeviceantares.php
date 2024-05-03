@@ -65,6 +65,6 @@ function getAllDevicesData() {
     } while (count($newDevices) > 0);
 }
 
-getAllDevicesData()
+getAllDevicesData();
 
 ?>
