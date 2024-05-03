@@ -1,6 +1,6 @@
     <?php
     include 'koneksi.php';
-    include 'getdeviceantares.php';
+    // include 'getdeviceantares.php';
     
 
     function getSerialNumbersFromNewTable() {
@@ -22,16 +22,15 @@
     function saveDataAntaresByDeviceId() {
         global $conn;
         $serialNumbers = getSerialNumbersFromNewTable();
-        
+        $headers = [
+            'X-M2M-Origin: 22d7ebb917b00bc8:b65db7ab728a0929',
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ];
+        $ch = curl_init();
+        // $serialNumber = $serialNumbers[0];
         foreach ($serialNumbers as $serialNumber) {
             $deviceUrl = "https://platform.antares.id:8443/~/antares-cse/antares-id/SmartWaterMeter_Depok/$serialNumber/la";
-            $headers = [
-                'X-M2M-Origin: 22d7ebb917b00bc8:b65db7ab728a0929',
-                'Content-Type: application/json;ty=4',
-                'Accept: application/json'
-            ];
-            
-            $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $deviceUrl);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -55,14 +54,13 @@
                 $RSSI = $radio['rssi'];
                 $SNR = $radio['snr'];
                 $timestamp = convertAntaresTimeToTimestamp($deviceDataParsed['m2m:cin']['ct']);
-            
 
-                $checkQuery = "SELECT COUNT(*) AS count FROM paylaod_device_depok WHERE serial_number = '$serialNumber'";
+                $checkQuery = "SELECT 1 FROM paylaod_device_depok WHERE serial_number = '$serialNumber'";
                 $checkResult = mysqli_query($conn, $checkQuery);
-                $checkRow = mysqli_fetch_assoc($checkResult);
-                $dataExists = $checkRow['count'] > 0;
-
-                if ($dataExists) {
+                // var_dump(array ($checkResult));
+                // var_dump((array)$checkResult);
+                // echo ((bool)$checkResult);
+                if ((bool)$checkResult) {
                     // Jika data sudah ada, update data di database
                     $updateQuery = "UPDATE paylaod_device_depok SET payload = '$payloadValue', devEUI = '$devEuiValue', rssi = '$RSSI', snr = '$SNR', timestamp = '$timestamp' WHERE serial_number = '$serialNumber'";
                     $updateSql = mysqli_query($conn, $updateQuery);
@@ -104,4 +102,5 @@
 
 
     saveDataAntaresByDeviceId(); // Panggil fungsi untuk menyimpan data ke database
+    echo "test";
     ?>
