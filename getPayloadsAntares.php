@@ -1,28 +1,4 @@
 <?php 
-//   $curl = curl_init();
-//   $serialNumber = "6923092051";
-//   $headers = [
-//     'X-M2M-Origin: 22d7ebb917b00bc8:b65db7ab728a0929',
-//     'Content-Type: application/json;ty=4',
-//     'Accept: application/json'
-//   ];
-
-//   curl_setopt_array($curl, [
-//     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-//     CURLOPT_CUSTOMREQUEST => 'GET',
-//     CURLOPT_URL => "https://platform.antares.id:8443/~/antares-cse/antares-id/SmartWaterMeter_Depok/$serialNumber/la?fu=1&drt=2&ty=4&lim=30",
-//     CURLOPT_RETURNTRANSFER => true,
-//     CURLOPT_HTTPHEADER => $headers,
-//   ]);
-
-  
-// $response = curl_exec($curl);
-// $response = json_decode($response,true);
-
-// $resultsArray = [];
-
-// print_r($response);
-// curl_close($curl);
 include 'koneksi.php';
 
 function getSerialNumbersFromNewTable() {
@@ -157,43 +133,6 @@ function saveDataAntaresByDeviceId() {
                 }
               }
             }
-            // if ($response && isset($deviceDataParsed['m2m:cin']) && isset($deviceDataParsed['m2m:cin']['con'])) {
-            //     $conParsed = json_decode($deviceDataParsed['m2m:cin']['con'], true);
-
-            //     $payloadValue = $conParsed['data'];
-            //     $devEuiValue = $conParsed['devEui'];
-            //     $radio = $conParsed['radio']['hardware'];
-            //     $RSSI = $radio['rssi'];
-            //     $SNR = $radio['snr'];
-            //     $timestamp = convertAntaresTimeToTimestamp($deviceDataParsed['m2m:cin']['ct']);
-                
-            //     $getId = "SELECT id FROM device_depok WHERE serial_number='$serialNumber'";
-            //     $res = mysqli_query($conn, $getId);
-            //     $deviceId = mysqli_fetch_assoc($res)['id']; // get id device depok
-
-            //     $dataExists = isDeviceExist($deviceId);
-
-                // if ($dataExists) {
-                //     // Jika data sudah ada, update data di database
-                //     $updateQuery = "UPDATE paylaod_device_depok SET payload = '$payloadValue', devEUI = '$devEuiValue', rssi = '$RSSI', snr = '$SNR', timestamp = '$timestamp' WHERE id_device_depok = '$deviceId'";
-                //     $updateSql = mysqli_query($conn, $updateQuery);
-
-                //     if ($updateSql) {
-                //         echo "Data successfully updated in the database for device $serialNumber.\n";
-                //     } else {
-                //         echo "Error updating data in the database for device $serialNumber: " . mysqli_error($conn) . "\n";
-                //     }
-                // } else {
-                //     // Jika data belum ada, insert data baru ke dalam database
-                //     $insertQuery = "INSERT INTO paylaod_device_depok (id_device_depok, payload, devEUI, rssi, snr, timestamp) VALUES ('$deviceId', '$payloadValue', '$devEuiValue', '$RSSI', '$SNR', '$timestamp')";
-                //     $insertSql = mysqli_query($conn, $insertQuery);
-                //     if ($insertSql) {
-                //         echo "New data successfully saved to database for device $serialNumber.\n";
-                //     } else {
-                //         echo "Error saving new data to database for device $serialNumber: " . mysqli_error($conn) . "\n";
-                //     }
-                // }
-            // }
         }
     }
 
