@@ -57,19 +57,21 @@ function saveDataAntaresByPayload() {
                 $forwardFlowValue = hexdec(str_replace(' ', '', $forwardFlow_reversed)) / 1000;
                 $batteryValue = hexdec($battery) / 10;
 
-                if ($batteryValue >= 3.6) {
-                    $percentage = 100;
+                if ($batteryValue <= 3.6 && $batteryValue > 3.6) {
+                    $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100;
+                    //$percentage = 100;
                 } elseif ($batteryValue <= 2.8) {
                     $percentage = 0;
                 } else {
                     $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100;
                 }
-
-                if ($percentage == 0) {
+    
+                if ($percentage < 62.5 ) {
                     $statusBattery = "Drop";
-                } elseif ($percentage == 100) {
-                    $statusBattery = "Stabil";
+                } elseif ($percentage >= 62.5) {
+                    $statusBattery = "Stabil"; 
                 }
+
             } else if (in_array(substr($serialNumber, 0, 3), array('682', '692'))) {
                 $forwardFlow = substr($payloadValue, 12, 8);
                 $battery = strtoupper(substr($payloadValue, 76, 2));
@@ -81,18 +83,19 @@ function saveDataAntaresByPayload() {
                 $forwardFlowValue = hexdec(str_replace(' ', '', $forwardFlow_reversed)) / 1000;
                 $batteryValue = hexdec($battery) / 10;
 
-                if ($batteryValue >= 3.6) {
-                    $percentage = 100;
+                if ($batteryValue <= 3.6 && $batteryValue > 3.6) {
+                    $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100;
+                    //$percentage = 100;
                 } elseif ($batteryValue <= 2.8) {
                     $percentage = 0;
                 } else {
                     $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100;
                 }
-
-                if ($percentage == 0) {
+    
+                if ($percentage < 62.5 ) {
                     $statusBattery = "Drop";
-                } elseif ($percentage == 100) {
-                    $statusBattery = "Stabil";
+                } elseif ($percentage >= 62.5) {
+                    $statusBattery = "Stabil"; 
                 }
             }
         }
@@ -127,18 +130,19 @@ function updateDataAntares($serialNumber, $payloadValue, $timestamp, $RSSI, $SNR
             $forwardFlowValue = hexdec(str_replace(' ', '', $forwardFlow_reversed)) / 1000;
             $batteryValue = hexdec($battery) / 10;
 
-            if ($batteryValue >= 3.6) {
-                $percentage = 100;
+            if ($batteryValue <= 3.6 && $batteryValue > 3.6) {
+                $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100;
+                //$percentage = 100;
             } elseif ($batteryValue <= 2.8) {
                 $percentage = 0;
             } else {
                 $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100;
             }
 
-            if ($percentage == 0) {
+            if ($percentage < 62.5 ) {
                 $statusBattery = "Drop";
-            } elseif ($percentage == 100) {
-                $statusBattery = "Stabil";
+            } elseif ($percentage >= 62.5) {
+                $statusBattery = "Stabil"; 
             }
         } else if (in_array(substr($serialNumber, 0, 3), array('682', '692'))) {
             $forwardFlow = substr($payloadValue, 12, 8);
@@ -151,19 +155,21 @@ function updateDataAntares($serialNumber, $payloadValue, $timestamp, $RSSI, $SNR
             $forwardFlowValue = hexdec(str_replace(' ', '', $forwardFlow_reversed)) / 1000;
             $batteryValue = hexdec($battery) / 10;
 
-            if ($batteryValue >= 3.6) {
-                $percentage = 100;
+            if ($batteryValue <= 3.6 && $batteryValue > 3.6) {
+                $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100;
+                //$percentage = 100;
             } elseif ($batteryValue <= 2.8) {
                 $percentage = 0;
             } else {
                 $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100;
             }
 
-            if ($percentage == 0) {
+            if ($percentage < 62.5 ) {
                 $statusBattery = "Drop";
-            } elseif ($percentage == 100) {
-                $statusBattery = "Stabil";
-            }
+            } elseif ($percentage >= 62.5) {
+                $statusBattery = "Stabil"; 
+            } 
+
         }
     }
 
