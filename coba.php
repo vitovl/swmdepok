@@ -104,8 +104,32 @@
 //                 // If the data already exists, skip insertion and display a message
 //                 echo "Data for device $serialNumber already exists in the database, skipping.\n";
 //             }
-//         } else {
+//          else {
 //             echo "Data structure not as expected for device $serialNumber.\n";
 //         }
-//     }
-// }
+//     
+// 
+
+<?php
+$last_data = 0;
+$data_baterai = array();
+
+while($row = $result->fetch_assoc()) {
+    $data_baterai[] = $row['data_baterai'];
+    $last_data = $row['data_baterai'];
+}
+
+$diff_sum = 0;
+for($i = max(0, count($data_baterai) - 30); $i < count($data_baterai) - 1; $i++) {
+    $diff = $data_baterai[$i + 1] - $data_baterai[$i];
+    $diff_sum += $diff;
+}
+//echo "Total Baterai: " . $diff_sum;
+
+if($diff_sum >= -0.2) {
+    echo "Stabil";
+} elseif($diff_sum < -0.2) {
+    echo "Drop";
+}
+
+?>

@@ -2,7 +2,7 @@
 
 include 'koneksi.php';
 // include 'getdeviceantares.php';
-include 'getpayloadantares.php';
+// include 'getpayloadantares.php';
 
 $status= '';
 
@@ -61,15 +61,15 @@ function saveDataAntaresByPayload() {
         }, array_reverse(str_split($data2, 2))));
 
         $decimal_data2 = hexdec(str_replace(' ', '', $data2_reversed)) / 1000;
-        $decimal_data3 = hexdec($data3) / 10;
+        $batteryValue = hexdec($data3) / 10;
 
         // Konversi nilai tegangan ke rentang 0% hingga 100%
-        if ($decimal_data3 >= 3.6) {
+        if ($batteryValue >= 3.6) {
             $percentage = 100;
-        } elseif ($decimal_data3 <= 2.8) {
+        } elseif ($batteryValue <= 2.8) {
             $percentage = 0;
         } else {
-            $percentage = (($decimal_data3 - 2.8) / (3.6 - 2.8)) * 100; // Menghitung persentase
+            $percentage = (($batteryValue - 2.8) / (3.6 - 2.8)) * 100; // Menghitung persentase
         }
 
         // Menentukan status baterai
@@ -83,7 +83,7 @@ function saveDataAntaresByPayload() {
         $signalStatus = getSignalStatus($RSSI, $SNR);
 
         // Simpan data ke tabel hasildata_depok
-        $insertSql = "INSERT INTO hasildata_depok (serial_number, payload, signal_status, rateDataFlow, batteryStatus, lastUpdate) VALUES ('$serialNumber', '$payloadValue', '$signalStatus', '$decimal_data2', '$status', '$timestamp')";
+        $insertSql = "INSERT INTO hasildata_depok (serial_number, payload, signal_status, rateDataFlow, batteryStatus, lastUpdate) VALUES ('$serialNumber', '$payloadValue', '$signalStatus', '$decimal_data2', '$batteryValue', '$timestamp')";
 
         $sqlInsert = mysqli_query($conn, $insertSql);
         if ($sqlInsert) {
@@ -113,26 +113,26 @@ function updateDataAntares($serialNumber, $payloadValue, $timestamp, $RSSI, $SNR
     $decimal_data3 = hexdec($data3) / 10;
 
     // Konversi nilai tegangan ke rentang 0% hingga 100%
-    if ($decimal_data3 >= 3.6) {
-        $percentage = 100;
-    } elseif ($decimal_data3 <= 2.8) {
-        $percentage = 0;
-    } else {
-        $percentage = (($decimal_data3 - 2.8) / (3.6 - 2.8)) * 100; // Menghitung persentase
-    }
+    // if ($decimal_data3 >= 3.6) {
+    //     $percentage = 100;
+    // } elseif ($decimal_data3 <= 2.8) {
+    //     $percentage = 0;
+    // } else {
+    //     $percentage = (($decimal_data3 - 2.8) / (3.6 - 2.8)) * 100; // Menghitung persentase
+    // }
 
-    // Menentukan status baterai
-    if ($percentage == 0) {
-        $status = "Drop";
-    } elseif ($percentage == 100) {
-        $status = "Stabil";
-    }
+    // // Menentukan status baterai
+    // if ($percentage == 0) {
+    //     $status = "Drop";
+    // } elseif ($percentage == 100) {
+    //     $status = "Stabil";
+    // }
 
     // Mendapatkan status sinyal dari fungsi getSignalStatus
     $signalStatus = getSignalStatus($RSSI, $SNR);
 
     // Query untuk memperbarui data di tabel hasildata_depok
-    $updateQuery = "UPDATE hasildata_depok SET payload = '$payloadValue', signal_status = '$signalStatus', rateDataFlow = '$decimal_data2', batteryStatus = '$status', lastUpdate = '$timestamp' WHERE serial_number = '$serialNumber'";
+    $updateQuery = "UPDATE hasildata_depok SET payload = '$payloadValue', signal_status = '$signalStatus', rateDataFlow = '$decimal_data2', batteryStatus = '$decimal_data3', lastUpdate = '$timestamp' WHERE serial_number = '$serialNumber'";
     $updateResult = mysqli_query($conn, $updateQuery);
 
     if ($updateResult) {
