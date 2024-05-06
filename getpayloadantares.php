@@ -28,7 +28,7 @@ function saveDataAntaresByDeviceId() {
         'Accept: application/json'
     ];
 
-    $chunkSize = 200; // Menentukan ukuran batch
+    $chunkSize = 100; // Menentukan ukuran batch
     $chunks = array_chunk($serialNumbers, $chunkSize); // Membagi data menjadi batch
 
     foreach ($chunks as $chunk) {
@@ -73,27 +73,27 @@ function saveDataAntaresByDeviceId() {
                 $SNR = $radio['snr'];
                 $timestamp = convertAntaresTimeToTimestamp($deviceDataParsed['m2m:cin']['ct']);
 
-                $checkQuery = "SELECT COUNT(*) AS count FROM paylaod_device_depok WHERE serial_number = '$serialNumber'";
+                $checkQuery = "SELECT COUNT(*) AS count FROM payload_device_depok WHERE serial_number = '$serialNumber'";
                 $checkResult = mysqli_query($conn, $checkQuery);
                 $checkRow = mysqli_fetch_assoc($checkResult);
                 $dataExists = $checkRow['count'] > 0;
 
                 if ($dataExists) {
                     // Jika data sudah ada, update data di database
-                    $updateQuery = "UPDATE paylaod_device_depok SET payload = '$payloadValue', devEUI = '$devEuiValue', rssi = '$RSSI', snr = '$SNR', timestamp = '$timestamp' WHERE serial_number = '$serialNumber'";
+                    $updateQuery = "UPDATE payload_device_depok SET payload = '$payloadValue', devEUI = '$devEuiValue', rssi = '$RSSI', snr = '$SNR', timestamp = '$timestamp' WHERE serial_number = '$serialNumber'";
                     $updateSql = mysqli_query($conn, $updateQuery);
 
                     if ($updateSql) {
-                        echo "Data successfully updated in the database for device $serialNumber.\n";
+                        echo "Data payload successfully updated in the database for device $serialNumber.\n";
                     } else {
                         echo "Error updating data in the database for device $serialNumber: " . mysqli_error($conn) . "\n";
                     }
                 } else {
                     // Jika data belum ada, insert data baru ke dalam database
-                    $insertQuery = "INSERT INTO paylAOd_device_depok (serial_number, payload, devEUI, rssi, snr, timestamp) VALUES ('$serialNumber', '$payloadValue', '$devEuiValue', '$RSSI', '$SNR', '$timestamp')";
+                    $insertQuery = "INSERT INTO payload_device_depok (serial_number, payload, devEUI, rssi, snr, timestamp) VALUES ('$serialNumber', '$payloadValue', '$devEuiValue', '$RSSI', '$SNR', '$timestamp')";
                     $insertSql = mysqli_query($conn, $insertQuery);
                     if ($insertSql) {
-                        echo "New data successfully saved to database for device $serialNumber.\n";
+                        echo "New data payload successfully saved to database for device $serialNumber.\n";
                     } else {
                         echo "Error saving new data to database for device $serialNumber: " . mysqli_error($conn) . "\n";
                     }
