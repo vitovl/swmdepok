@@ -18,7 +18,15 @@ function getSerialNumbersFromNewTable() {
     return $serialNumbers;
 }
 
+function isDeviceExist($deviceId) {
+    global $conn;
 
+    $query = "SELECT COUNT(*) AS count FROM payload_device_depok WHERE id_device_depok='$deviceId'";
+    $checkResult = mysqli_query($conn, $query);
+    $checkRow = mysqli_fetch_assoc($checkResult);
+
+    return $checkRow['count'] > 0;
+}
 function saveDataAntaresByDeviceId() {
     global $conn;
     $mh = curl_multi_init();
@@ -73,21 +81,21 @@ function saveDataAntaresByDeviceId() {
                 $SNR = $radio['snr'];
                 $timestamp = convertAntaresTimeToTimestamp($deviceDataParsed['m2m:cin']['ct']);
 
-                // $getId = "SELECT id FROM device_depok WHERE serial_number='$serialNumber'";
-                // $res = mysqli_query($conn, $getId);
-                // $deviceId = mysqli_fetch_assoc($res)['id']; // get id device depok
+                $getId = "SELECT id FROM device_depok WHERE serial_number='$serialNumber'";
+                $res = mysqli_query($conn, $getId);
+                $deviceId = mysqli_fetch_assoc($res)['id']; // get id device depok
 
                 // Memeriksa apakah data sudah ada di database dan timestamp lebih baru
-                $checkQuery = "SELECT COUNT(*) AS count, MAX(timestamp) AS max_timestamp FROM payload_device_depok WHERE serial_number = '$serialNumber'";
+                $checkQuery = "SELECT COUNT(*) AS count, MAX(timestamp) AS max_timestamp FROM payload_device_depok WHERE id_device_depok = '$deviceId'";
                 $checkResult = mysqli_query($conn, $checkQuery);
                 $checkRow = mysqli_fetch_assoc($checkResult);
-                $dataExists = $checkRow['count'] > 0;
+                $dataExists = isDeviceExist($deviceId);
                 $existingTimestamp = strtotime($checkRow['max_timestamp']);
                 $newTimestamp = strtotime($timestamp);
 
                 // Jika data tidak ada di database atau timestamp lebih baru, maka data akan dimasukkan ke database
                 if (!$dataExists || $newTimestamp > $existingTimestamp) {
-                    $insertQuery = "INSERT INTO payload_device_depok (id_device_depok, payload, devEUI, rssi, snr, timestamp) VALUES ('$serialNumber', '$payloadValue', '$devEuiValue', '$RSSI', '$SNR', '$timestamp')";
+                    $insertQuery = "INSERT INTO payload_device_depok (id_device_depok, payload, devEUI, rssi, snr, timestamp) VALUES ('$deviceId', '$payloadValue', '$devEuiValue', '$RSSI', '$SNR', '$timestamp')";
                     $insertSql = mysqli_query($conn, $insertQuery);
                     if ($insertSql) {
                         echo "New data payload successfully saved to database for device $serialNumber.\n";
