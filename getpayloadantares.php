@@ -1,6 +1,7 @@
 <?php
 include 'koneksi.php';
 
+
 function getSerialNumbersFromNewTable() {
     global $conn;
     $serialNumbers = [];
@@ -13,7 +14,7 @@ function getSerialNumbersFromNewTable() {
     }
     while ($row = mysqli_fetch_assoc($result)) {
         $serialNumbers[] = $row['serial_number'];
-    }
+    }  // Menampilkan jumlah nomor seri yang berhasil dibaca
     return $serialNumbers;
 }
 
@@ -37,12 +38,12 @@ function saveDataAntaresByDeviceId() {
         'Accept: application/json'
     ];
 
-    $ch = curl_init();
-    $chunkSize = 200; // Menentukan ukuran batch
+    $chunkSize = 100; // Menentukan ukuran batch
     $chunks = array_chunk($serialNumbers, $chunkSize); // Membagi data menjadi batch
-    // print_r($chunks);
+
     foreach ($chunks as $chunk) {
         foreach ($chunk as $serialNumber) {
+            $ch = curl_init();
             $deviceUrl = "https://platform.antares.id:8443/~/antares-cse/antares-id/SmartWaterMeter_Depok/$serialNumber/la";
 
             curl_setopt($ch, CURLOPT_URL, $deviceUrl);
@@ -58,7 +59,6 @@ function saveDataAntaresByDeviceId() {
         } while ($running > 0);
 
         foreach ($chunk as $serialNumber) {
-
             $ch = $curlHandles[$serialNumber]; // Dapatkan handle cURL dari array berdasarkan nomor seri perangkat
             $response = curl_multi_getcontent($ch);
             $error = curl_error($ch);
@@ -71,46 +71,45 @@ function saveDataAntaresByDeviceId() {
             }
 
             $deviceDataParsed = json_decode($response, true);
+
             if ($response && isset($deviceDataParsed['m2m:cin']) && isset($deviceDataParsed['m2m:cin']['con'])) {
                 $conParsed = json_decode($deviceDataParsed['m2m:cin']['con'], true);
                 $payloadValue = $conParsed['data'];
-                print_r($payloadValue);
                 $devEuiValue = $conParsed['devEui'];
                 $radio = $conParsed['radio']['hardware'];
                 $RSSI = $radio['rssi'];
                 $SNR = $radio['snr'];
                 $timestamp = convertAntaresTimeToTimestamp($deviceDataParsed['m2m:cin']['ct']);
-                
+
                 $getId = "SELECT id FROM device_depok WHERE serial_number='$serialNumber'";
                 $res = mysqli_query($conn, $getId);
                 $deviceId = mysqli_fetch_assoc($res)['id']; // get id device depok
 
-                $dataExists = isPayloadExist($deviceId);
+                // Memeriksa apakah data sudah ada di database dan timestamp lebih baru
+                $checkQuery = "SELECT COUNT(*) AS count, MAX(timestamp) AS max_timestamp FROM payload_device_depok WHERE id_device_depok = '$deviceId'";
+                $checkResult = mysqli_query($conn, $checkQuery);
+                $checkRow = mysqli_fetch_assoc($checkResult);
+                $dataExists = isDeviceExist($deviceId);
+                $existingTimestamp = strtotime($checkRow['max_timestamp']);
+                $newTimestamp = strtotime($timestamp);
 
-                if ($dataExists) {
-                    // Jika data sudah ada, update data di database
-                    $updateQuery = "UPDATE paylaod_device_depok SET payload = '$payloadValue', devEUI = '$devEuiValue', rssi = '$RSSI', snr = '$SNR', timestamp = '$timestamp' WHERE id_device_depok = '$deviceId'";
-                    $updateSql = mysqli_query($conn, $updateQuery);
-
-                    if ($updateSql) {
-                        echo "Data successfully updated in the database for device $serialNumber.\n";
-                    } else {
-                        echo "Error updating data in the database for device $serialNumber: " . mysqli_error($conn) . "\n";
-                    }
-                } else {
-                    // Jika data belum ada, insert data baru ke dalam database
-                    $insertQuery = "INSERT INTO paylaod_device_depok (id_device_depok, payload, devEUI, rssi, snr, timestamp) VALUES ('$deviceId', '$payloadValue', '$devEuiValue', '$RSSI', '$SNR', '$timestamp')";
+                // Jika data tidak ada di database atau timestamp lebih baru, maka data akan dimasukkan ke database
+                if (!$dataExists || $newTimestamp > $existingTimestamp) {
+                    $insertQuery = "INSERT INTO payload_device_depok (id_device_depok, payload, devEUI, rssi, snr, timestamp) VALUES ('$deviceId', '$payloadValue', '$devEuiValue', '$RSSI', '$SNR', '$timestamp')";
                     $insertSql = mysqli_query($conn, $insertQuery);
                     if ($insertSql) {
-                        echo "New data successfully saved to database for device $serialNumber.\n";
+                        echo "New data payload successfully saved to database for device $serialNumber.\n";
                     } else {
                         echo "Error saving new data to database for device $serialNumber: " . mysqli_error($conn) . "\n";
                     }
+                } else {
+                    echo "Data payload for device $serialNumber is up to date.\n";
                 }
             }
         }
     }
-
+    // Menampilkan jumlah nomor seri yang telah diproses
+    echo "Total serial numbers processed: " . count($serialNumbers) . "\n";
     curl_multi_close($mh);
 }
 
@@ -129,6 +128,12 @@ function convertAntaresTimeToTimestamp($antaresTime) {
     return date('Y-m-d H:i:s', $timestamp); // Mengembalikan timestamp dalam format yang sesuai
 }   
 
-// Panggil fungsi untuk menyimpan data ke database secara asynchronous
+// Jalankan kode secara terus menerus dengan interval 10 menit
+// while (true) {
+//     // Panggil fungsi untuk menyimpan data ke database
 saveDataAntaresByDeviceId();
+    
+//     // Tunggu selama 10 menit sebelum menjalankan kembali
+//     sleep(60); // 600 detik = 10 menit
+// }
 ?>

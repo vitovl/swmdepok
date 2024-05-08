@@ -9,6 +9,7 @@
     // if(isset($_POST['save_update'])) {  
     // echo "CEK";
         // getAllDevicesData();
-        saveDataAntaresByDeviceId(); // Fetch data from getdataantares.php
+        //saveDataAntaresByDeviceId();
+        saveDataAntaresByPayload(); // Fetch data from getdataantares.php
     // }
 ?>

@@ -74,13 +74,12 @@ function saveDataAntaresByDeviceId() {
             $checkRow = mysqli_fetch_assoc($checkResult);
             $dataExists = $checkRow['count'] > 0;
 
-            if ($dataExists) {
-                // Jika data sudah ada, update data di database
-                $updateQuery = "UPDATE paylaod_device_depok SET payload = '$payloadValue', devEUI = '$devEuiValue', rssi = '$RSSI', snr = '$SNR', timestamp = '$timestamp' WHERE serial_number = '$serialNumber'";
-                $updateSql = mysqli_query($conn, $updateQuery);
-
-                if ($updateSql) {
-                    echo "Data successfully updated in the database for device $serialNumber.\n";
+            if (!$deviceExists) {
+                // If the device doesn't exist, insert it into the database
+                $insertQuery = "INSERT INTO device_depok (serial_number,created_at) VALUES ('$number', NOW())";
+                $insertResult = mysqli_query($conn, $insertQuery);
+                if ($insertResult) {
+                    echo "Data for device $number successfully saved to database.\n";
                 } else {
                     echo "Error updating data in the database for device $serialNumber: " . mysqli_error($conn) . "\n";
                 }

@@ -24,7 +24,7 @@ function saveDataAntaresByPayload()
 {
     global $conn, $headerSerialNumber;
 
-    $query = "SELECT id, id_device_depok, payload, timestamp, rssi, snr FROM payload_device_depok";
+    $query = "SELECT serial_number, payload, timestamp, rssi, snr FROM payload_device_depok";
     $result = mysqli_query($conn, $query);
     if (!$result) {
         echo "Error: " . mysqli_error($conn);
