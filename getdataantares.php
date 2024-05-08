@@ -95,55 +95,92 @@ function saveDataAntaresByPayload()
                             return sprintf("%02X", hexdec($item));
                         }, array_reverse(str_split($forwardFlow, 2))));
 
-                        $forwardFlowValue = hexdec(str_replace(' ', '', $forwardFlow_reversed)) / 1000;
-                        $batteryValue = hexdec($battery) / 10;
+        $decimal_data2 = hexdec(str_replace(' ', '', $data2_reversed)) / 1000;
+        $decimal_data3 = hexdec($data3) / 10;
 
-                        // Hitung perubahan nilai baterai dari 3 timestamp terbaru
-                        $batteryChangeQuery = "SELECT batteryValue FROM hasil_parsed_depok WHERE serial_number = '$serialNumber' ORDER BY timestamp DESC LIMIT 3";
-                        $batteryChangeResult = mysqli_query($conn, $batteryChangeQuery);
-                        $batteryValues = [];
-                        while ($batteryChangeRow = mysqli_fetch_assoc($batteryChangeResult)) {
-                            $batteryValues[] = $batteryChangeRow['batteryValue'];
-                        }
-        
-                        // Periksa perubahan nilai baterai
-                        if (count($batteryValues) == 3) {
-                            $batteryChange = abs(max($batteryValues) - min($batteryValues));
-                            if ($batteryChange >= 0.2) {
-                                $statusBattery = "Drop";
-                            } else {
-                                $statusBattery = "Stabil";
-                            }
-                        } else {
-                            $statusBattery = ($batteryValue >= 3.4) ? "Stabil" : "Drop";
-                        }
-                    }
-
-                    // Masukkan data baru ke dalam tabel hasil_parsed_depok
-                    $signalStatus = getSignalStatus($RSSI, $SNR);
-                    $insertSql = "INSERT INTO hasil_parsed_depok (serial_number, payload, RSSI , SNR, signalStatus, flowMeter, batteryValue, batteryStatus, timestamp) VALUES ('$serialNumber', '$payloadValue', '$RSSI', '$SNR', '$signalStatus', '$forwardFlowValue', '$batteryValue', '$statusBattery', '$timestamp')";
-                    $insertQuery = mysqli_query($conn, $insertSql);
-
-                    if ($insertQuery) {
-                        echo "New data PARSING successfully saved to database for device $serialNumber.\n";
-                    } else {
-                        echo "Error saving new data to database for device $serialNumber: " . mysqli_error($conn) . "\n";
-                    }
-                }
-            } else {
-                echo "Data for device $serialNumber with timestamp $timestamp already exists in hasil_parsed_depok.\n";
-            }
+        // Konversi nilai tegangan ke rentang 0% hingga 100%
+        if ($decimal_data3 >= 3.6) {
+            $percentage = 100;
+        } elseif ($decimal_data3 <= 2.8) {
+            $percentage = 0;
         } else {
-            echo "Data for device $serialNumber with timestamp $timestamp does not exist in payload_device_depok.\n";
+            $percentage = (($decimal_data3 - 2.8) / (3.6 - 2.8)) * 100; // Menghitung persentase
+        }
+
+        // Menentukan status baterai
+        if ($percentage == 0) {
+            $status = "Drop";
+        } elseif ($percentage == 100) {
+            $status = "Stabil";
+        }
+
+        // Mendapatkan status sinyal dari fungsi getSignalStatus
+        $signalStatus = getSignalStatus($RSSI, $SNR);
+
+        // Simpan data ke tabel hasildata_depok
+        $insertSql = "INSERT INTO hasildata_depok (serial_number, payload, signal_status, rateDataFlow, batteryStatus, lastUpdate) VALUES ('$serialNumber', '$payloadValue', '$signalStatus', '$decimal_data2', '$decimal_data3', '$timestamp')";
+
+        $sqlInsert = mysqli_query($conn, $insertSql);
+        if ($sqlInsert) {
+            echo "Data berhasil disimpan ke databasee hasildata_depok\n";
+        } else {
+            echo "Error saving new data to database for device $serialNumber: " . mysqli_error($conn) . "\n";
         }
     }
 }
 
-while (true) {
-    // Panggil fungsi untuk menyimpan data ke database
-    saveDataAntaresByDeviceId();
-    saveDataAntaresByPayload(); // Uncomment this line to execute saveDataAntaresByPayload()
-    sleep(60); // 600 detik = 10 menit
+function updateDataAntares($serialNumber, $payloadValue, $timestamp, $RSSI, $SNR) {
+    global $conn;
+
+    // Memisahkan data dari payload
+    $data2 = substr($payloadValue, 16, 8);
+    $data3 = strtoupper(substr($payloadValue, 54, 2));
+
+    $hex_data2 = implode(' ', array_map(function ($item) {
+        return sprintf("%02X", hexdec($item));
+    }, str_split($data2, 2)));
+
+    $data2_reversed = implode(' ', array_map(function ($item) {
+        return sprintf("%02X", hexdec($item));
+    }, array_reverse(str_split($data2, 2))));
+
+    $decimal_data2 = hexdec(str_replace(' ', '', $data2_reversed)) / 1000;
+    $decimal_data3 = hexdec($data3) / 10;
+
+    // Konversi nilai tegangan ke rentang 0% hingga 100%
+    // if ($decimal_data3 >= 3.6) {
+    //     $percentage = 100;
+    // } elseif ($decimal_data3 <= 2.8) {
+    //     $percentage = 0;
+    // } else {
+    //     $percentage = (($decimal_data3 - 2.8) / (3.6 - 2.8)) * 100; // Menghitung persentase
+    // }
+
+    // // Menentukan status baterai
+    // if ($percentage == 0) {
+    //     $status = "Drop";
+    // } elseif ($percentage == 100) {
+    //     $status = "Stabil";
+    // }
+
+    // Mendapatkan status sinyal dari fungsi getSignalStatus
+    $signalStatus = getSignalStatus($RSSI, $SNR);
+
+    // Query untuk memperbarui data di tabel hasildata_depok
+    $updateQuery = "UPDATE hasildata_depok SET payload = '$payloadValue', signal_status = '$signalStatus', rateDataFlow = '$decimal_data2', batteryStatus = '$decimal_data3', lastUpdate = '$timestamp' WHERE serial_number = '$serialNumber'";
+    $updateResult = mysqli_query($conn, $updateQuery);
+
+    if ($updateResult) {
+        echo "Data successfully updated in the databaseeeee for device $serialNumber.\n";
+    } else {
+        echo "Error updating data in the database for device $serialNumber: " . mysqli_error($conn) . "\n";
+    }
 }
+
+
+// Panggil fungsi untuk menyimpan data ke tabel payload_device_depok
+// getAllDevicesData();
+// saveDataAntaresByDeviceId();
+saveDataAntaresByPayload(); // Panggil fungsi untuk menyimpan data baru
 
 ?>
