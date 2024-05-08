@@ -1,12 +1,27 @@
 <?php
 
 include 'koneksi.php';
-include 'getdeviceantares.php';
-include 'getpayloadantares.php';
+// include 'getdeviceantares.php';
+//include 'getpayloadantares.php';
 
 $status = '';
 $headerSerialNumber = array('620', '702', '602', '682', '692');
 
+function getSerialNumbersFromNewTable() {
+    global $conn;
+    $serialNumbers = [];
+    // Query untuk mendapatkan semua serial number dari tabel baru di database
+    $query = "SELECT serial_number FROM device_depok";
+    $result = mysqli_query($conn, $query);
+    if (!$result) {
+        echo "Error: " . mysqli_error($conn);
+        return [];
+    }
+    while ($row = mysqli_fetch_assoc($result)) {
+        $serialNumbers[] = $row['serial_number'];
+    }  // Menampilkan jumlah nomor seri yang berhasil dibaca
+    return $serialNumbers;
+}
 function getSignalStatus($RSSI, $SNR)
 {
     if ($RSSI > -115 || $SNR > -2) {
@@ -20,11 +35,31 @@ function getSignalStatus($RSSI, $SNR)
     }
 }
 
+
+function isDeviceExist($deviceId) {
+    global $conn;
+    $query = "SELECT COUNT(*) AS count FROM hasil_parsed_depok WHERE id_device_depok='$deviceId'";
+    $checkResult = mysqli_query($conn, $query);
+    $checkRow = mysqli_fetch_assoc($checkResult);
+    return $checkRow['count'] > 0;
+}
+
+
+function isPayloadExist($payloadId) {
+    global $conn;
+
+    $query = "SELECT COUNT (*) AS count FROM hasil_parsed_depok WHERE id_payload='$payloadId'";
+    $checkResult = mysqli_query($conn, $query);
+    $checkRow = mysqli_fetch_assoc($checkResult);
+
+    return $checkRow["count"] > 0;
+}
+
 function saveDataAntaresByPayload()
 {
     global $conn, $headerSerialNumber;
 
-    $query = "SELECT serial_number, payload, timestamp, rssi, snr FROM payload_device_depok";
+    $query = "SELECT id, id_device_depok, payload, timestamp, rssi, snr FROM payload_device_depok";
     $result = mysqli_query($conn, $query);
     if (!$result) {
         echo "Error: " . mysqli_error($conn);
@@ -32,34 +67,30 @@ function saveDataAntaresByPayload()
     }
 
     while ($row = mysqli_fetch_assoc($result)) {
-        if (isset($row['id_device_depok'])) { // Check if 'id_device_depok' key exists
-            $deviceId = $row['id_device_depok'];
-
-        } if(isset($row['id'])){
-            $idPayload = $row['id'];
-        
-        }    else {
-            echo "Error: 'id_device_depok' key does not exist in the result.\n";
-            continue; // Skip this iteration if key does not exist
-        }
+       
+        $deviceId = $row['id_device_depok']; // Mengambil nomor seri perangkat sebagai ID
+        $idPayload = $row['id'];
         $payloadValue = $row['payload'];
         $timestamp = $row['timestamp'];
         $RSSI = $row['rssi'];
         $SNR = $row['snr'];
-
+ 
         // Mendapatkan ID perangkat dari tabel device_depok
-        $getIdQuery = "SELECT id FROM device_depok WHERE id ='$deviceId'";
+        $getIdQuery = "SELECT id FROM device_depok WHERE id = '$deviceId'";
+
+         // Menggunakan serial_number sebagai kriteria
         $getIdResult = mysqli_query($conn, $getIdQuery);
-        if ($getIdResult && mysqli_num_rows($getIdResult) > 0) {
-            $deviceRow = mysqli_fetch_assoc($getIdResult);
-            $deviceId = $deviceRow['id']; // Mengambil ID perangkat depok
-        } else {
-            echo "Error: Device with serial number $deviceId does not exist.\n";
-            continue;
-        }
+        // print_r(mysqli_fetch_assoc($getIdResult));
+        // if ($getIdResult && mysqli_num_rows($getIdResult) > 0) {
+        //     $deviceRow = mysqli_fetch_assoc($getIdResult);
+        //     $deviceId = $deviceRow['id']; // Mengambil ID perangkat depok
+        // } else {
+        //     echo "Error: Device with serial number $deviceId does not exist.\n";
+        //     continue;
+        // }
 
         // Mendapatkan ID payload dari tabel payload_device_depok
-        $getIdPayloadQuery = "SELECT id FROM payload_device_depok WHERE id = '$idPayload'";
+        $getIdPayloadQuery = "SELECT id FROM payload_device_depok WHERE payload = '$payloadValue'";
         $getIdPayloadResult = mysqli_query($conn, $getIdPayloadQuery);
         if ($getIdPayloadResult && mysqli_num_rows($getIdPayloadResult) > 0) {
             $payloadRow = mysqli_fetch_assoc($getIdPayloadResult);
@@ -74,19 +105,6 @@ function saveDataAntaresByPayload()
         $checkResult = mysqli_query($conn, $checkQuery);
         $checkRow = mysqli_fetch_assoc($checkResult);
         $dataExists = $checkRow['total'] > 0;
-
-    // // Cek apakah data dengan timestamp tersebut ada di tabel payload_device_depok
-    // $check_payload_query = "SELECT COUNT(*) AS total FROM payload_device_depok WHERE id = '$idPayload'  id_device_depok = '$deviceId' AND timestamp = '$timestamp'";
-    // $check_payload_result = mysqli_query($conn, $check_payload_query);
-    // $check_payload_row = mysqli_fetch_assoc($check_payload_result);
-    // $payload_exists = $check_payload_row['total'] > 0;
-
-    // if ($payloadExists && $dataExists) {
-        // Masukkan data hanya jika belum ada di tabel hasil_parsed_depok
-        // $check_query = "SELECT COUNT(*) AS total FROM hasil_parsed_depok WHERE id_payload = $id , id_device_depok = '$deviceId' AND timestamp = '$timestamp'";
-        // $check_result = mysqli_query($conn, $check_query);
-        // $check_row = mysqli_fetch_assoc($check_result);
-        // $dataExists = $check_row['total'] > 0;
 
         if (!$dataExists) {
             // Jika data tidak ada di database, maka data akan dimasukkan ke database
@@ -154,6 +172,7 @@ function saveDataAntaresByPayload()
                     } else {
                         $statusBattery = ($batteryValue >= 3.4) ? "Stabil" : "Drop";
                     }
+                
                 }
 
                 // Masukkan data baru ke dalam tabel hasil_parsed_depok
@@ -172,6 +191,7 @@ function saveDataAntaresByPayload()
         }
     }
 }
+
 
 while (true) {
     // Panggil fungsi untuk menyimpan data ke database

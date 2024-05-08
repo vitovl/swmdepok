@@ -18,17 +18,17 @@ function getSerialNumbersFromNewTable() {
     return $serialNumbers;
 }
 
-function isPayloadExist($deviceId) {
+function isDeviceExist($deviceId) {
     global $conn;
-    $query = "SELECT COUNT(*) AS count FROM paylaod_device_depok WHERE id_device_depok='$deviceId'";
+
+    $query = "SELECT COUNT(*) AS count FROM payload_device_depok WHERE id_device_depok='$deviceId'";
     $checkResult = mysqli_query($conn, $query);
     $checkRow = mysqli_fetch_assoc($checkResult);
+
     return $checkRow['count'] > 0;
 }
-
 function saveDataAntaresByDeviceId() {
     global $conn;
-
     $mh = curl_multi_init();
     $curlHandles = [];
     $serialNumbers = getSerialNumbersFromNewTable();
