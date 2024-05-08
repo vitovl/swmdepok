@@ -81,17 +81,17 @@ function saveDataAntaresByPayload()
          // Menggunakan serial_number sebagai kriteria
         $getIdResult = mysqli_query($conn, $getIdQuery);
         // print_r(mysqli_fetch_assoc($getIdResult));
-        // if ($getIdResult && mysqli_num_rows($getIdResult) > 0) {
-        //     $deviceRow = mysqli_fetch_assoc($getIdResult);
-        //     $deviceId = $deviceRow['id']; // Mengambil ID perangkat depok
-        // } else {
-        //     echo "Error: Device with serial number $deviceId does not exist.\n";
-        //     continue;
-        // }
-
+        if ($getIdResult && mysqli_num_rows($getIdResult) > 0) {
+            $deviceRow = mysqli_fetch_assoc($getIdResult);
+            $deviceId = $deviceRow['id']; // Mengambil ID perangkat depok
+        } else {
+            echo "Error: Device with serial number $deviceId does not exist.\n";
+            continue;
+        }
         // Mendapatkan ID payload dari tabel payload_device_depok
         $getIdPayloadQuery = "SELECT id FROM payload_device_depok WHERE payload = '$payloadValue'";
         $getIdPayloadResult = mysqli_query($conn, $getIdPayloadQuery);
+        // print_r(mysqli_fetch_assoc($getIdPayloadResult));
         if ($getIdPayloadResult && mysqli_num_rows($getIdPayloadResult) > 0) {
             $payloadRow = mysqli_fetch_assoc($getIdPayloadResult);
             $idPayload = $payloadRow['id']; // Mengambil ID payload_device_depok
@@ -99,7 +99,7 @@ function saveDataAntaresByPayload()
             echo "Error: Payload with ID $idPayload does not exist.\n";
             continue;
         }
-
+        
         // Cek keberadaan data pada tabel hasil_parsed_depok
         $checkQuery = "SELECT COUNT(*) AS total FROM hasil_parsed_depok WHERE id_device_depok = '$deviceId' AND timestamp = '$timestamp'";
         $checkResult = mysqli_query($conn, $checkQuery);
