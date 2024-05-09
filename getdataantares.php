@@ -1,7 +1,7 @@
 <?php
 
 include 'koneksi.php';
-// include 'getdeviceantares.php';
+include 'getdeviceantares.php';
 include 'getpayloadantares.php';
 
 $status = '';
@@ -22,16 +22,6 @@ function getSignalStatus($RSSI, $SNR)
 }
 
 
-
-function isPayloadExist($payloadId) {
-    global $conn;
-
-    $query = "SELECT COUNT (*) AS count FROM hasil_parsed_depok WHERE id_payload='$payloadId'";
-    $checkResult = mysqli_query($conn, $query);
-    $checkRow = mysqli_fetch_assoc($checkResult);
-
-    return $checkRow["count"] > 0;
-}
 
 function saveDataAntaresByPayload()
 {
@@ -166,9 +156,9 @@ function saveDataAntaresByPayload()
                 }
             }
         }
-        //else {
-        //     echo "Data for device $deviceId with timestamp $timestamp already exists in hasil_parsed_depok.\n";
-        // }
+        else {
+             echo "Data for device $deviceId with timestamp $timestamp already exists in hasil_parsed_depok.\n";
+        }
     }
 }
 
