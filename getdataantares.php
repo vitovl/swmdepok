@@ -7,21 +7,21 @@ include 'getpayloadantares.php';
 $status = '';
 $headerSerialNumber = array('620', '702', '602', '682', '692');
 
-function getSerialNumbersFromNewTable() {
-    global $conn;
-    $serialNumbers = [];
-    // Query untuk mendapatkan semua serial number dari tabel baru di database
-    $query = "SELECT serial_number FROM device_depok";
-    $result = mysqli_query($conn, $query);
-    if (!$result) {
-        echo "Error: " . mysqli_error($conn);
-        return [];
-    }
-    while ($row = mysqli_fetch_assoc($result)) {
-        $serialNumbers[] = $row['serial_number'];
-    }  // Menampilkan jumlah nomor seri yang berhasil dibaca
-    return $serialNumbers;
-}
+// function getSerialNumbersFromNewTable() {
+//     global $conn;
+//     $serialNumbers = [];
+//     // Query untuk mendapatkan semua serial number dari tabel baru di database
+//     $query = "SELECT serial_number FROM device_depok";
+//     $result = mysqli_query($conn, $query);
+//     if (!$result) {
+//         echo "Error: " . mysqli_error($conn);
+//         return [];
+//     }
+//     while ($row = mysqli_fetch_assoc($result)) {
+//         $serialNumbers[] = $row['serial_number'];
+//     }  // Menampilkan jumlah nomor seri yang berhasil dibaca
+//     return $serialNumbers;
+// }
 function getSignalStatus($RSSI, $SNR)
 {
     if ($RSSI > -115 || $SNR > -2) {
@@ -36,13 +36,13 @@ function getSignalStatus($RSSI, $SNR)
 }
 
 
-function isDeviceExist($deviceId) {
-    global $conn;
-    $query = "SELECT COUNT(*) AS count FROM hasil_parsed_depok WHERE id_device_depok='$deviceId'";
-    $checkResult = mysqli_query($conn, $query);
-    $checkRow = mysqli_fetch_assoc($checkResult);
-    return $checkRow['count'] > 0;
-}
+// function isDeviceExist($deviceId) {
+//     global $conn;
+//     $query = "SELECT COUNT(*) AS count FROM hasil_parsed_depok WHERE id_device_depok='$deviceId'";
+//     $checkResult = mysqli_query($conn, $query);
+//     $checkRow = mysqli_fetch_assoc($checkResult);
+//     return $checkRow['count'] > 0;
+// }
 
 
 function isPayloadExist($payloadId) {
