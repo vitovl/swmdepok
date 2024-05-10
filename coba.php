@@ -110,7 +110,7 @@
 //     
 // 
 
-<?php
+<!-- <
 $last_data = 0;
 $data_baterai = array();
 
@@ -132,4 +132,4 @@ if($diff_sum >= -0.2) {
     echo "Drop";
 }
 
-?>
+?> -->
