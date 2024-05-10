@@ -7,7 +7,6 @@
 
     if ($conn) {
         mysqli_select_db($conn, $db);
-        echo "success!. <br>" ;   
     }
 
     if(!$conn) {
