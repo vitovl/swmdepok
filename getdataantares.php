@@ -112,7 +112,7 @@ function saveDataAntaresByPayload()
                     } else {
                         $statusBattery = ($batteryValue >= 3.4) ? "Stabil" : "Drop";
                     }
-                } else if (in_array(substr($deviceId, 0, 3), array('682', '692'))) {
+                } else if (in_array(substr($serialNumber, 0, 3), array('682', '692'))) {
                     $forwardFlow = substr($payloadValue, 12, 8);
                     $battery = strtoupper(substr($payloadValue, 76, 2));
                     $forwardFlow_reversed = implode(' ', array_map(function ($item) {
