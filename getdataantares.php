@@ -76,18 +76,20 @@ function saveDataAntaresByPayload()
         $SNR = $row['snr'];
  
         // Mendapatkan ID perangkat dari tabel device_depok
-        $getIdQuery = "SELECT id FROM device_depok WHERE id = '$deviceId'";
-
+        $getIdQuery = "SELECT id, serial_number FROM device_depok WHERE id = '$deviceId'";
          // Menggunakan serial_number sebagai kriteria
         $getIdResult = mysqli_query($conn, $getIdQuery);
         // print_r(mysqli_fetch_assoc($getIdResult));
         if ($getIdResult && mysqli_num_rows($getIdResult) > 0) {
             $deviceRow = mysqli_fetch_assoc($getIdResult);
             $deviceId = $deviceRow['id']; // Mengambil ID perangkat depok
+            $serialNumber = $deviceRow['serial_number'];
         } else {
             echo "Error: Device with serial number $deviceId does not exist.\n";
             continue;
         }
+
+        // print_r($serialNumber);
         // Mendapatkan ID payload dari tabel payload_device_depok
         $getIdPayloadQuery = "SELECT id FROM payload_device_depok WHERE payload = '$payloadValue'";
         $getIdPayloadResult = mysqli_query($conn, $getIdPayloadQuery);
@@ -99,19 +101,19 @@ function saveDataAntaresByPayload()
             echo "Error: Payload with ID $idPayload does not exist.\n";
             continue;
         }
-        
+
         // Cek keberadaan data pada tabel hasil_parsed_depok
         $checkQuery = "SELECT COUNT(*) AS total FROM hasil_parsed_depok WHERE id_device_depok = '$deviceId' AND timestamp = '$timestamp'";
         $checkResult = mysqli_query($conn, $checkQuery);
         $checkRow = mysqli_fetch_assoc($checkResult);
         $dataExists = $checkRow['total'] > 0;
-
         if (!$dataExists) {
+            
             // Jika data tidak ada di database, maka data akan dimasukkan ke database
-            if (in_array(substr($deviceId, 0, 3), $headerSerialNumber)) {
+            if (in_array(substr($serialNumber, 0, 3), $headerSerialNumber)) {
                 // Variabel $statusBattery didefinisikan di sini
                 $statusBattery = "";
-                if (in_array(substr($deviceId, 0, 3), array('620', '702', '602'))) {
+                if (in_array(substr($serialNumber, 0, 3), array('620', '702', '602'))) {
                     $forwardFlow = substr($payloadValue, 16, 8);
                     $battery = strtoupper(substr($payloadValue, 54, 2));
 
@@ -121,7 +123,6 @@ function saveDataAntaresByPayload()
 
                     $forwardFlowValue = hexdec(str_replace(' ', '', $forwardFlow_reversed)) / 1000;
 
-                  
                     $batteryValue = hexdec($battery) / 10;
 
                     // Hitung perubahan nilai baterai dari 3 timestamp terbaru
