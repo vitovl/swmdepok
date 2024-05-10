@@ -1,57 +1,65 @@
 <?php
 include 'koneksi.php';
 
-$sql = "SELECT id_device_depok, RSSI, SNR, flowMeter, batteryValue, timestamp FROM hasil_parsed_depok";
+$sql = "SELECT id_device_depok, RSSI, SNR, signalStatus, flowMeter, batteryValue, batteryStatus, timestamp FROM hasil_parsed_depok";
 $queryGetAllData = mysqli_query($conn, $sql);
 
 $dataArray = array(); // Array untuk menyimpan data
 
+// Mengelompokkan data berdasarkan id_device_depok dan tanggal
 while ($row = mysqli_fetch_assoc($queryGetAllData)) {
-    $data = array(
-        'id_device_depok' => $row['id_device_depok'],
-        'RSSI' => $row['RSSI'],
-        'SNR' => $row['SNR'],
-        'flowMeter' => $row['flowMeter'],
-        'batteryValue' => $row['batteryValue'],
-        'timestamp' => $row['timestamp']
-    );
-    $dataArray[] = $data;
-}
-
-// Array untuk menyimpan rateDataFlow untuk setiap id_device_depok
-$rateDataFlowArray = array();
-
-// Menghitung rateDataFlow untuk setiap id_device_depok
-foreach ($dataArray as $data) {
-    $id_device_depok = $data['id_device_depok'];
-    $flowMeter = $data['flowMeter'];
+    $id_device_depok = $row['id_device_depok'];
+    $tanggal = date('Y-m-d', strtotime($row['timestamp'])); // Ambil tanggal dari timestamp
     
-    if (!isset($rateDataFlowArray[$id_device_depok])) {
-        $rateDataFlowArray[$id_device_depok] = 0;
+    // Buat kunci pengelompokkan berdasarkan id_device_depok dan tanggal
+    $groupKey = $id_device_depok . '_' . $tanggal;
+    
+    if (!isset($dataArray[$groupKey])) {
+        $dataArray[$groupKey] = array(
+            'id_device_depok' => $id_device_depok,
+            'tanggal' => $tanggal,
+            'data' => array(),
+            'rateDataFlow' => 0
+        );
     }
     
+    $dataArray[$groupKey]['data'][] = $row;
+}
+
+// Menghitung rateDataFlow untuk setiap kelompok id_device_depok dan tanggal
+foreach ($dataArray as &$group) {
     $totalChanges = 0;
-    $totalIterations = count($dataArray);
+    $totalIterations = count($group['data']);
     
-    for ($i = 1; $i < $totalIterations; $i++) {
-        if ($dataArray[$i]['id_device_depok'] == $id_device_depok) {
-            $totalChanges += ($dataArray[$i]['flowMeter'] - $dataArray[$i - 1]['flowMeter']);
+    if ($totalIterations > 1) {
+        for ($i = 1; $i < $totalIterations; $i++) {
+            $totalChanges += ($group['data'][$i]['flowMeter'] - $group['data'][$i - 1]['flowMeter']);
         }
+        
+        $group['rateDataFlow'] = $totalChanges * 24 / ($totalIterations - 1);
+    } else {
+        $group['rateDataFlow'] = 0; // Jika hanya ada satu data, rateDataFlow diatur menjadi 0
     }
     
-    $rateDataFlow = $totalChanges * 24 / ($totalIterations - 1); // Menghitung rata-rata perubahan data per jam
-    $rateDataFlowArray[$id_device_depok] = $rateDataFlow;
-}
+    //Mengubah array ke format JSON
+   // $jsonOutput = json_encode($dataArray);
 
-// Output hasilnya dalam bentuk array
-foreach ($dataArray as $data) {
-    echo 'id_device_depok: ' . $data['id_device_depok'] . "<br>";
-    echo 'RSSI: ' . $data['RSSI'] . "<br>";
-    echo 'SNR: ' . $data['SNR'] . "<br>";
-    echo 'flowMeter: ' . $data['flowMeter'] . "<br>";
-    echo 'rateDataFlow: ' . $rateDataFlowArray[$data['id_device_depok']] . "<br>";
-    echo 'batteryValue: ' . $data['batteryValue'] . "<br>";
-    echo 'timestamp: ' . $data['timestamp'] . "<br>";
-    echo "<br>";
-}
+    // Output hasilnya dalam format JSON
+    //echo $jsonOutput;
+    // //Output hasilnya dalam bentuk array untuk setiap kelompok
+    foreach ($group['data'] as $data) {
+        echo 'id_device_depok: ' . $data['id_device_depok'] . "<br>";
+        // echo 'RSSI: ' . $data['RSSI'] . "<br>";
+        // echo 'SNR: ' . $data['SNR'] . "<br>";
+        echo 'signalStatus:' . $data['signalStatus'] . "<br>";
+        // echo 'flowMeter: ' . $data['flowMeter'] . "<br>";
+        echo 'rateDataFlow: ' . $group['rateDataFlow'] . "<br>";
+        // echo 'batteryValue: ' . $data['batteryValue'] . "<br>";
+        echo 'batteryStatus:' . $data['batteryStatus'] . "<br>";
+        echo 'timestamp: ' . $data['timestamp'] . "<br>";
+        echo "<br>";
+
+    }
+} 
+
 ?>
