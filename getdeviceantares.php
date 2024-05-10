@@ -45,7 +45,7 @@ function getAllDevicesData() {
 
             if (!$deviceExists) {
                 // If the device doesn't exist, insert it into the database
-                $insertQuery = "INSERT INTO device_depok (serial_number) VALUES ('$number')";
+                $insertQuery = "INSERT INTO device_depok (serial_number,created_at) VALUES ('$number', NOW())";
                 $insertResult = mysqli_query($conn, $insertQuery);
                 if ($insertResult) {
                     echo "Data for device $number successfully saved to database.\n";

@@ -1,27 +1,13 @@
 <?php
 
 include 'koneksi.php';
-// include 'getdeviceantares.php';
-//include 'getpayloadantares.php';
+include 'getdeviceantares.php';
+include 'getpayloadantares.php';
 
 $status = '';
 $headerSerialNumber = array('620', '702', '602', '682', '692');
 
-function getSerialNumbersFromNewTable() {
-    global $conn;
-    $serialNumbers = [];
-    // Query untuk mendapatkan semua serial number dari tabel baru di database
-    $query = "SELECT serial_number FROM device_depok";
-    $result = mysqli_query($conn, $query);
-    if (!$result) {
-        echo "Error: " . mysqli_error($conn);
-        return [];
-    }
-    while ($row = mysqli_fetch_assoc($result)) {
-        $serialNumbers[] = $row['serial_number'];
-    }  // Menampilkan jumlah nomor seri yang berhasil dibaca
-    return $serialNumbers;
-}
+
 function getSignalStatus($RSSI, $SNR)
 {
     if ($RSSI > -115 || $SNR > -2) {
@@ -36,24 +22,6 @@ function getSignalStatus($RSSI, $SNR)
 }
 
 
-function isDeviceExist($deviceId) {
-    global $conn;
-    $query = "SELECT COUNT(*) AS count FROM hasil_parsed_depok WHERE id_device_depok='$deviceId'";
-    $checkResult = mysqli_query($conn, $query);
-    $checkRow = mysqli_fetch_assoc($checkResult);
-    return $checkRow['count'] > 0;
-}
-
-
-function isPayloadExist($payloadId) {
-    global $conn;
-
-    $query = "SELECT COUNT (*) AS count FROM hasil_parsed_depok WHERE id_payload='$payloadId'";
-    $checkResult = mysqli_query($conn, $query);
-    $checkRow = mysqli_fetch_assoc($checkResult);
-
-    return $checkRow["count"] > 0;
-}
 
 function saveDataAntaresByPayload()
 {
@@ -144,7 +112,7 @@ function saveDataAntaresByPayload()
                     } else {
                         $statusBattery = ($batteryValue >= 3.4) ? "Stabil" : "Drop";
                     }
-                } else if (in_array(substr($deviceId, 0, 3), array('682', '692'))) {
+                } else if (in_array(substr($serialNumber, 0, 3), array('682', '692'))) {
                     $forwardFlow = substr($payloadValue, 12, 8);
                     $battery = strtoupper(substr($payloadValue, 76, 2));
                     $forwardFlow_reversed = implode(' ', array_map(function ($item) {
@@ -187,8 +155,9 @@ function saveDataAntaresByPayload()
                     echo "Error saving new data to database for device $deviceId: " . mysqli_error($conn) . "\n";
                 }
             }
-        } else {
-            echo "Data for device $deviceId with timestamp $timestamp already exists in hasil_parsed_depok.\n";
+        }
+        else {
+             echo "Data for device $deviceId with timestamp $timestamp already exists in hasil_parsed_depok.\n";
         }
     }
 }
@@ -196,7 +165,7 @@ function saveDataAntaresByPayload()
 
 while (true) {
     // Panggil fungsi untuk menyimpan data ke database
-    //saveDataAntaresByDeviceId();
+    saveDataAntaresByDeviceId();
     saveDataAntaresByPayload(); // Uncomment this line to execute saveDataAntaresByPayload()
     sleep(60); // 600 detik = 10 menit
 }
