@@ -1,8 +1,8 @@
 <?php
 
 include 'koneksi.php';
-//include 'getdeviceantares.php';
-//include 'getpayloadantares.php';
+include 'getdeviceantares.php';
+include 'getpayloadantares.php';
 
 $status = '';
 $headerSerialNumber = array('620', '702', '602', '682', '692');
