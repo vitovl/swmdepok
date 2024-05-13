@@ -7,11 +7,11 @@
 
     if ($conn) {
         mysqli_select_db($conn, $db);
-        echo "success!. <br>" ;   
+           
     }
 
     if(!$conn) {
-        echo "fail! . <br>";
+        echo "failed your connection database! ";
         die("Connection failed: " . mysqli_connect_error());
     }
     
