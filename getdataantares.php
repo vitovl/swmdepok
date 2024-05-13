@@ -7,6 +7,7 @@ include 'getpayloadantares.php';
 $status = '';
 $headerSerialNumber = array('620', '702', '602', '682', '692');
 
+
 function getSignalStatus($RSSI, $SNR)
 {
     if ($RSSI > -115 || $SNR > -2) {
@@ -20,21 +21,33 @@ function getSignalStatus($RSSI, $SNR)
     }
 }
 
-function processChunk($chunk)
+
+
+function saveDataAntaresByPayload()
 {
     global $conn, $headerSerialNumber;
 
-    foreach ($chunk as $row) {
+    $query = "SELECT id, id_device_depok, payload, timestamp, rssi, snr FROM payload_device_depok";
+    $result = mysqli_query($conn, $query);
+    if (!$result) {
+        echo "Error: " . mysqli_error($conn);
+        return;
+    }
+
+    while ($row = mysqli_fetch_assoc($result)) {
+       
         $deviceId = $row['id_device_depok']; // Mengambil nomor seri perangkat sebagai ID
         $idPayload = $row['id'];
         $payloadValue = $row['payload'];
         $timestamp = $row['timestamp'];
         $RSSI = $row['rssi'];
         $SNR = $row['snr'];
-
+ 
         // Mendapatkan ID perangkat dari tabel device_depok
         $getIdQuery = "SELECT id, serial_number FROM device_depok WHERE id = '$deviceId'";
+         // Menggunakan serial_number sebagai kriteria
         $getIdResult = mysqli_query($conn, $getIdQuery);
+        // print_r(mysqli_fetch_assoc($getIdResult));
         if ($getIdResult && mysqli_num_rows($getIdResult) > 0) {
             $deviceRow = mysqli_fetch_assoc($getIdResult);
             $deviceId = $deviceRow['id']; // Mengambil ID perangkat depok
@@ -44,9 +57,11 @@ function processChunk($chunk)
             continue;
         }
 
+        // print_r($serialNumber);
         // Mendapatkan ID payload dari tabel payload_device_depok
         $getIdPayloadQuery = "SELECT id FROM payload_device_depok WHERE payload = '$payloadValue'";
         $getIdPayloadResult = mysqli_query($conn, $getIdPayloadQuery);
+        // print_r(mysqli_fetch_assoc($getIdPayloadResult));
         if ($getIdPayloadResult && mysqli_num_rows($getIdPayloadResult) > 0) {
             $payloadRow = mysqli_fetch_assoc($getIdPayloadResult);
             $idPayload = $payloadRow['id']; // Mengambil ID payload_device_depok
@@ -61,8 +76,10 @@ function processChunk($chunk)
         $checkRow = mysqli_fetch_assoc($checkResult);
         $dataExists = $checkRow['total'] > 0;
         if (!$dataExists) {
+            
             // Jika data tidak ada di database, maka data akan dimasukkan ke database
             if (in_array(substr($serialNumber, 0, 3), $headerSerialNumber)) {
+                // Variabel $statusBattery didefinisikan di sini
                 $statusBattery = "";
                 if (in_array(substr($serialNumber, 0, 3), array('620', '702', '602'))) {
                     $forwardFlow = substr($payloadValue, 16, 8);
@@ -73,6 +90,7 @@ function processChunk($chunk)
                     }, array_reverse(str_split($forwardFlow, 2))));
 
                     $forwardFlowValue = hexdec(str_replace(' ', '', $forwardFlow_reversed)) / 1000;
+
                     $batteryValue = hexdec($battery) / 10;
 
                     // Hitung perubahan nilai baterai dari 3 timestamp terbaru
@@ -82,11 +100,15 @@ function processChunk($chunk)
                     while ($batteryChangeRow = mysqli_fetch_assoc($batteryChangeResult)) {
                         $batteryValues[] = $batteryChangeRow['batteryValue'];
                     }
-
+    
                     // Periksa perubahan nilai baterai
                     if (count($batteryValues) == 3) {
                         $batteryChange = abs(max($batteryValues) - min($batteryValues));
-                        $statusBattery = ($batteryChange >= 0.2) ? "Drop" : "Stabil";
+                        if ($batteryChange >= 0.2) {
+                            $statusBattery = "Drop";
+                        } else {
+                            $statusBattery = "Stabil";
+                        }
                     } else {
                         $statusBattery = ($batteryValue >= 3.4) ? "Stabil" : "Drop";
                     }
@@ -107,14 +129,19 @@ function processChunk($chunk)
                     while ($batteryChangeRow = mysqli_fetch_assoc($batteryChangeResult)) {
                         $batteryValues[] = $batteryChangeRow['batteryValue'];
                     }
-
+    
                     // Periksa perubahan nilai baterai
                     if (count($batteryValues) == 3) {
                         $batteryChange = abs(max($batteryValues) - min($batteryValues));
-                        $statusBattery = ($batteryChange >= 0.2) ? "Drop" : "Stabil";
+                        if ($batteryChange >= 0.2) {
+                            $statusBattery = "Drop";
+                        } else {
+                            $statusBattery = "Stabil";
+                        }
                     } else {
                         $statusBattery = ($batteryValue >= 3.4) ? "Stabil" : "Drop";
                     }
+                
                 }
 
                 // Masukkan data baru ke dalam tabel hasil_parsed_depok
@@ -128,35 +155,19 @@ function processChunk($chunk)
                     echo "Error saving new data to database for device $deviceId: " . mysqli_error($conn) . "\n";
                 }
             }
-        } else {
-            echo "Data for device $deviceId with timestamp $timestamp already exists in hasil_parsed_depok.\n";
+        }
+        else {
+             echo "Data for device $deviceId with timestamp $timestamp already exists in hasil_parsed_depok.\n";
         }
     }
 }
 
-function saveDataAntaresByPayload()
-{
-    global $conn;
-
-    $query = "SELECT id, id_device_depok, payload, timestamp, rssi, snr FROM payload_device_depok";
-    $result = mysqli_query($conn, $query);
-    if (!$result) {
-        echo "Error: " . mysqli_error($conn);
-        return;
-    }
-
-    $chunkSize = 100;
-    while ($chunk = mysqli_fetch_all($result, MYSQLI_ASSOC)) {
-        $chunks = array_chunk($chunk, $chunkSize);
-        foreach ($chunks as $chunk) {
-            processChunk($chunk);
-        }
-    }
-}
 
 while (true) {
     // Panggil fungsi untuk menyimpan data ke database
+    saveDataAntaresByDeviceId();
     saveDataAntaresByPayload(); // Uncomment this line to execute saveDataAntaresByPayload()
-    sleep(30); // 30 detik = 0,5 menit
+    sleep(60); // 600 detik = 10 menit
 }
+
 ?>
