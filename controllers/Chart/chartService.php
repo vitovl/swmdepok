@@ -12,8 +12,7 @@ function getAllDataGraphics() {
                 hp.timestamp, 
                 IFNULL(
                     (hp.flowMeter - LAG(hp.flowMeter) OVER (PARTITION BY dp.serial_number, DATE(hp.timestamp) ORDER BY hp.timestamp)) / TIMESTAMPDIFF(HOUR, LAG(hp.timestamp) OVER (PARTITION BY dp.serial_number, DATE(hp.timestamp) ORDER BY hp.timestamp), hp.timestamp)* 24,
-                    0
-                ) AS rateDataFlow
+                    0) AS rateDataFlow
             FROM 
                 hasil_parsed_depok hp 
             INNER JOIN 
