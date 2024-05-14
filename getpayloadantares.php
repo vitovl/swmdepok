@@ -109,7 +109,7 @@ function saveDataAntaresByDeviceId() {
         }
     }
     // Menampilkan jumlah nomor seri yang telah diproses
-    echo "Total serial numbers processed: " . count($serialNumbers) . "\n";
+    echo "Total serial  numbers processed: " . count($serialNumbers) . "\n";
     curl_multi_close($mh);
 }
 

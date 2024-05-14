@@ -4,7 +4,7 @@
   header('Content-Type: Application/json');
   header('Access-Control-Allow-Method: GET');
 
-  include 'chartService.php';
+  include './chartService.php';
 
   // $reqMethod = $_SERVER["REQUEST_METHOD"]; // return which request method was used to access the page; e.g. 'GET', 'HEAD', 'POST', 'PUT'. 
   // // print_r($reqMethod);
@@ -24,4 +24,3 @@
   
   
 ?>
-
