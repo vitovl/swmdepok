@@ -1,6 +1,6 @@
 <?php
 
-include "koneksi.php";
+include '../koneksi.php';
 
 function getAllDevicesData() {
     $limit = 2000;
