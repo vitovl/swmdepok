@@ -5,7 +5,7 @@
   // header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
   // header('Content-Type: application/json');
 
-  include_once('./detailService.php');
+  include_once('./detailservice.php');
   $reqMethod = $_SERVER["REQUEST_METHOD"]; // return which request method was used to access the page; e.g. 'GET', 'HEAD', 'POST', 'PUT'. 
 
   if($reqMethod != "GET") { //if method is not GET 

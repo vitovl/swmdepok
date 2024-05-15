@@ -6,7 +6,7 @@ header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
 // header('Content-Type: application/json');
 // header("Access-Control-Allow-Credentials: true");
 
-include './chartService.php';
+include './chartservice.php';
 
   // $reqMethod = $_SERVER["REQUEST_METHOD"]; // return which request method was used to access the page; e.g. 'GET', 'HEAD', 'POST', 'PUT'. 
   // // print_r($reqMethod);
