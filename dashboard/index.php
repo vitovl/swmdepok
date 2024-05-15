@@ -1,15 +1,10 @@
 <?php
 
-// header('Access-Control-Allow-Origin: *');
-// header('Content-Type: application/json');
-// header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-// header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-
-header('Access-Control-Allow-Headers: Accept');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Accept, Content-Type, ngrok-skip-browser-warning');
 header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
 // header('Content-Type: application/json');
-header("Access-Control-Allow-Credentials: true");
+// header("Access-Control-Allow-Credentials: true");
 
 include './chartService.php';
 
@@ -24,6 +19,9 @@ include './chartService.php';
   //   echo json_encode($data);
   // } else if($reqMethod == "GET"){
       //method is GET
+      if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        header('HTTP/1.1 200 OK');
+    }
     $allChartData = getAllDataGraphics();
     echo $allChartData;
   

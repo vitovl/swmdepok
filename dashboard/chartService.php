@@ -1,8 +1,8 @@
 <?php
 
-header('Access-Control-Allow-Headers: Accept');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
+// header('Access-Control-Allow-Headers: Accept, Content-Type');
+// header('Access-Control-Allow-Origin: *');
+// header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
 // header('Content-Type: application/json');
 
 
