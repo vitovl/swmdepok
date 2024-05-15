@@ -1,10 +1,17 @@
 <?php
 
-  header('Access-Control-Allow-Origin:*');
-  header('Content-Type: Application/json');
-  header('Access-Control-Allow-Method: GET');
+// header('Access-Control-Allow-Origin: *');
+// header('Content-Type: application/json');
+// header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+// header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
-  include './chartService.php';
+header('Access-Control-Allow-Headers: Accept');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
+// header('Content-Type: application/json');
+header("Access-Control-Allow-Credentials: true");
+
+include './chartService.php';
 
   // $reqMethod = $_SERVER["REQUEST_METHOD"]; // return which request method was used to access the page; e.g. 'GET', 'HEAD', 'POST', 'PUT'. 
   // // print_r($reqMethod);
@@ -19,8 +26,6 @@
       //method is GET
     $allChartData = getAllDataGraphics();
     echo $allChartData;
-  // }
-
-  
   
 ?>
+

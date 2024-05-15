@@ -1,6 +1,6 @@
 <?php
 
-include "../../../koneksi.php";
+include "../../koneksi.php";
 
 function getDetailDevice() {
     global $conn;
@@ -23,7 +23,7 @@ function getDetailDevice() {
                     dp.serial_number = '$serial_number'
                 ORDER BY 
                     hp.timestamp DESC
-                LIMIT 3"; // Hanya ambil 3 data terbaru
+                LIMIT 30"; // Hanya ambil 3 data terbaru
 
         $queryGetDetailDevice = mysqli_query($conn, $sql);
         
@@ -104,5 +104,5 @@ function getDetailDevice() {
     }
 }
 
-getDetailDevice();
+//getDetailDevice();
 ?>

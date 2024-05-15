@@ -1,13 +1,3 @@
-<IfModule mod_rewrite.c>
-   
-   # rewrite engine serrings:
-    RewriteEngine On
-
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-
-    # rewrite rules:
-    RewriteRule ^(.*)$ ./routes/index.php?$1 [L,QSA]
-
-
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin *"
 </IfModule>

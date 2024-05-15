@@ -1,6 +1,6 @@
 <?php
 
-include 'koneksi.php';
+include "koneksi.php";
 include 'getdeviceantares.php';
 include 'getpayloadantares.php';
 
@@ -90,7 +90,7 @@ function saveDataAntaresByPayload($chunk)
                     $batteryValue = hexdec($battery) / 10;
 
                     // Hitung perubahan nilai baterai dari 3 timestamp terbaru
-                    $batteryChangeQuery = "SELECT batteryValue FROM hasil_parsed_depok WHERE id_device_depok = '$deviceId' ORDER BY timestamp DESC LIMIT 3";
+                    $batteryChangeQuery = "SELECT batteryValue FROM hasil_parsed_depok WHERE id_device_depok = '$deviceId' ORDER BY timestamp DESC LIMIT 30";
                     $batteryChangeResult = mysqli_query($conn, $batteryChangeQuery);
                     $batteryValues = [];
                     while ($batteryChangeRow = mysqli_fetch_assoc($batteryChangeResult)) {

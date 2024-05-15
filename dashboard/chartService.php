@@ -1,24 +1,34 @@
 <?php
-include "../../koneksi.php";
+
+header('Access-Control-Allow-Headers: Accept');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
+// header('Content-Type: application/json');
+
+
+include "../koneksi.php";
 
 function getAllDataGraphics() {
     global $conn;
 
     $sql = "SELECT 
-                dp.serial_number, 
-                hp.signalStatus, 
-                hp.flowMeter, 
-                hp.batteryStatus, 
-                hp.timestamp, 
-                IFNULL(
-                    (hp.flowMeter - LAG(hp.flowMeter) OVER (PARTITION BY dp.serial_number, DATE(hp.timestamp) ORDER BY hp.timestamp)) / TIMESTAMPDIFF(HOUR, LAG(hp.timestamp) OVER (PARTITION BY dp.serial_number, DATE(hp.timestamp) ORDER BY hp.timestamp), hp.timestamp)* 24,
-                    0) AS rateDataFlow
-            FROM 
-                hasil_parsed_depok hp 
-            INNER JOIN 
-                device_depok dp ON hp.id_device_depok = dp.id 
-            ORDER BY 
-                hp.timestamp DESC";
+        dp.serial_number, 
+        hp.signalStatus, 
+        hp.flowMeter, 
+        hp.batteryStatus, 
+        hp.timestamp,
+        IFNULL(
+            (hp.flowMeter - LAG(hp.flowMeter) OVER (PARTITION BY dp.serial_number ORDER BY hp.timestamp)) * 24 / 
+            TIMESTAMPDIFF(HOUR, LAG(hp.timestamp) OVER (PARTITION BY dp.serial_number ORDER BY hp.timestamp), hp.timestamp),
+            0
+        ) AS rateDataFlow
+    FROM 
+        hasil_parsed_depok hp 
+    INNER JOIN 
+        device_depok dp ON hp.id_device_depok = dp.id 
+    ORDER BY 
+        hp.timestamp DESC
+    ";
 
     $queryGetAllData = mysqli_query($conn, $sql);
 
@@ -34,7 +44,6 @@ function getAllDataGraphics() {
                 $responseData = [
                     "serial_number" => $row['serial_number'],
                     "signalStatus" => $row['signalStatus'],
-                    //"flowMeter" => $row['flowMeter'],
                     "rateDataFlow" => $row['rateDataFlow'],
                     "batteryStatus" => $row['batteryStatus'],
                     "timestamp" => $row['timestamp']
@@ -60,5 +69,6 @@ function getAllDataGraphics() {
     }
 }
 
-//getAllDataGraphics();
+// Uncomment the line below to run the function
+// getAllDataGraphics();
 ?>
