@@ -22,7 +22,8 @@ include './chartservice.php';
       if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         header('HTTP/1.1 200 OK');
     };
-    $allChartData = getAllDataGraphics();
+    $allChartData = getAllDataGraphics($limit, $skip);
     echo $allChartData;
   
 ?>
+
