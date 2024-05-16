@@ -5,12 +5,13 @@
 // header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
 // header('Content-Type: application/json');
 
-
 include "../koneksi.php";
 
-
-function getAllDataGraphics() {
+function getAllDataGraphics($limit = 0, $skip = 0) {
     global $conn;
+
+    // Jika limit = 0, tidak ada limit pada query, jika tidak tambahkan limit dan offset pada query
+    $limitQuery = $limit > 0 ? " LIMIT " . intval($limit) . " OFFSET " . intval($skip) : "";
 
     $sql = "SELECT 
         dp.serial_number, 
@@ -29,6 +30,7 @@ function getAllDataGraphics() {
         device_depok dp ON hp.id_device_depok = dp.id 
     ORDER BY 
         hp.timestamp DESC
+        $limitQuery
     ";
 
     $queryGetAllData = mysqli_query($conn, $sql);
@@ -70,6 +72,10 @@ function getAllDataGraphics() {
     }
 }
 
-// Uncomment the line below to run the function
-// getAllDataGraphics();
+// Menangani parameter limit dan skip dari URL
+$limit = isset($_GET['limit']) ? intval($_GET['limit']) : 0;
+$skip = isset($_GET['skip']) ? intval($_GET['skip']) : 0;
+
+// Panggil fungsi dengan parameter limit dan skip
+//echo getAllDataGraphics($limit, $skip);
 ?>
