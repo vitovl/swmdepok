@@ -5,9 +5,11 @@
 // header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
 // header('Content-Type: application/json');
 
+
 include "../koneksi.php";
 
-function getAllDataGraphics($limit, $skip) {
+
+function getAllDataGraphics() {
     global $conn;
 
     $sql = "SELECT 
@@ -27,7 +29,7 @@ function getAllDataGraphics($limit, $skip) {
         device_depok dp ON hp.id_device_depok = dp.id 
     ORDER BY 
         hp.timestamp DESC
-    LIMIT $limit OFFSET $skip";
+    ";
 
     $queryGetAllData = mysqli_query($conn, $sql);
 
@@ -68,10 +70,6 @@ function getAllDataGraphics($limit, $skip) {
     }
 }
 
-// Get limit and skip from request, default to limit 20 and skip 0 if not provided
-$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;
-$skip = isset($_GET['skip']) ? (int)$_GET['skip'] : 0;
-
-// $allChartData = getAllDataGraphics($limit, $skip);
-// echo $allChartData;
+// Uncomment the line below to run the function
+// getAllDataGraphics();
 ?>
