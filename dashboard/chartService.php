@@ -8,6 +8,7 @@
 
 include "../koneksi.php";
 
+
 function getAllDataGraphics() {
     global $conn;
 
@@ -18,8 +19,8 @@ function getAllDataGraphics() {
         hp.batteryStatus, 
         hp.timestamp,
         IFNULL(
-            (hp.flowMeter - LAG(hp.flowMeter) OVER (PARTITION BY dp.serial_number ORDER BY hp.timestamp)) * 24 / 
-            TIMESTAMPDIFF(HOUR, LAG(hp.timestamp) OVER (PARTITION BY dp.serial_number ORDER BY hp.timestamp), hp.timestamp),
+            ROUND((hp.flowMeter - LAG(hp.flowMeter) OVER (PARTITION BY dp.serial_number ORDER BY hp.timestamp)) * 24 / 
+            TIMESTAMPDIFF(HOUR, LAG(hp.timestamp) OVER (PARTITION BY dp.serial_number ORDER BY hp.timestamp), hp.timestamp), 2),
             0
         ) AS rateDataFlow
     FROM 
