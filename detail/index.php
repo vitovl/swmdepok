@@ -1,9 +1,8 @@
 <?php
 
-  // header('Access-Control-Allow-Headers: Content-Type');
-  // header('Access-Control-Allow-Origin: *');
-  // header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
-  // header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Accept, Content-Type, ngrok-skip-browser-warning');
+header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
 
   include_once('./detailservice.php');
   $reqMethod = $_SERVER["REQUEST_METHOD"]; // return which request method was used to access the page; e.g. 'GET', 'HEAD', 'POST', 'PUT'. 
