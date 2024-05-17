@@ -1,22 +1,10 @@
 <?php
-
 include "../koneksi.php";
-
-function createToken($userId, $email) {
-    $expiryTime = time() + (24 * 60 * 60); // 24 jam
-    $tokenPayload = json_encode([
-        'id' => $userId,
-        'email' => $email,
-        'exp' => $expiryTime
-    ]);
-    return base64_encode($tokenPayload);
-}
 
 function login() {
     global $conn;
-    $response = []; // Inisialisasi respon
+    $response = [];
 
-    // Memeriksa apakah metode permintaan adalah POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -32,10 +20,19 @@ function login() {
             $query = mysqli_query($conn, $sqllogin);
 
             if (mysqli_num_rows($query) > 0) {
-                // Pengguna sudah ada, lakukan login
                 $user = mysqli_fetch_assoc($query);
                 if (password_verify($password, $user['password'])) {
-                    $token = createToken($user['id'], $user['email']);
+                    // Kode pembuatan token
+                    $key = "example_key"; // Ganti dengan kunci rahasia Anda
+                    $expiryTime = time() + (24 * 60 * 60); // 24 jam
+                    $payload = [
+                        'id' => $user['id'],
+                        'email' => $user['email'],
+                        'exp' => $expiryTime
+                    ];
+                    $token = \Firebase\JWT\JWT::encode($payload, $key, 'HS256'); // Tambahkan algoritma enkripsi
+                    // Akhir kode pembuatan token
+
                     $response = [
                         'status' => 'success',
                         'message' => 'Login successful',
@@ -45,22 +42,7 @@ function login() {
                     $response = ['status' => 'error', 'message' => 'Invalid Email or Password'];
                 }
             } else {
-                // Pengguna belum ada, lakukan pendaftaran
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                $sqlregister = "INSERT INTO user_login (email, password) VALUES ('$email', '$hashedPassword')";
-                $query = mysqli_query($conn, $sqlregister);
-
-                if ($query) {
-                    $user_id = mysqli_insert_id($conn);
-                    $token = createToken($user_id, $email);
-                    $response = [
-                        'status' => 'success',
-                        'message' => 'Registration successful',
-                        'token' => $token
-                    ];
-                } else {
-                    $response = ['status' => 'error', 'message' => 'Registration failed'];
-                }
+                $response = ['status' => 'error', 'message' => 'User not found. Please register first.'];
             }
         }
     } else {
@@ -68,6 +50,8 @@ function login() {
     }
 
     header('Content-Type: application/json');
-    return json_encode($response);
+    echo json_encode($response);
 }
+login();
+
 ?>

@@ -1,18 +1,22 @@
 <?php
 
 include "../koneksi.php";
+require '../vendor/autoload.php';
+
+use \Firebase\JWT\JWT;
+use \Firebase\JWT\Key;
 
 function verifyToken($token) {
-    $decodedPayload = base64_decode($token);
-    $tokenData = json_decode($decodedPayload, true);
-
-    if ($tokenData['exp'] < time()) {
-        return false; // Token telah kadaluarsa
+    $key = "example_key"; // Ganti dengan kunci rahasia Anda
+    try {
+        $decoded = JWT::decode($token, new Key($key, 'HS256'));
+        return (array) $decoded;
+    } catch (Exception $e) {
+        return false;
     }
-    return $tokenData;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') { // Ubah GET menjadi POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $headers = getallheaders();
     if (!isset($headers['Authorization'])) {
         header('Content-Type: application/json');
@@ -20,7 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { // Ubah GET menjadi POST
         exit;
     }
 
-    $token = $headers['Authorization'];
+    // Authorization header bisa berupa "Bearer <token>"
+    $authHeader = $headers['Authorization'];
+    $tokenParts = explode(" ", $authHeader);
+    if (count($tokenParts) !== 2 || $tokenParts[0] !== 'Bearer') {
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'error', 'message' => 'Invalid token format']);
+        exit;
+    }
+    $token = $tokenParts[1];
+
     $user = verifyToken($token);
 
     if ($user) {
