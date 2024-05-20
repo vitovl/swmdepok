@@ -7,11 +7,12 @@ use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
 function verifyToken($token) {
-    $key = "example_key"; // Ganti dengan kunci rahasia Anda
+    $key = "fjaodanifeiraifanneiona3937582";
     try {
         $decoded = JWT::decode($token, new Key($key, 'HS256'));
         return (array) $decoded;
     } catch (Exception $e) {
+        error_log("Token verification failed: " . $e->getMessage()); // Log the error message
         return false;
     }
 }
@@ -20,16 +21,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $headers = getallheaders();
     if (!isset($headers['Authorization'])) {
         header('Content-Type: application/json');
-        echo json_encode(['status' => 'error', 'message' => 'Authorization header missing']);
+        echo json_encode([
+            "status" => 400,
+            "message" => "Authorization header missing"
+        ]);
         exit;
     }
 
-    // Authorization header bisa berupa "Bearer <token>"
     $authHeader = $headers['Authorization'];
     $tokenParts = explode(" ", $authHeader);
     if (count($tokenParts) !== 2 || $tokenParts[0] !== 'Bearer') {
         header('Content-Type: application/json');
-        echo json_encode(['status' => 'error', 'message' => 'Invalid token format']);
+        echo json_encode([
+            "status" => 400,
+            "message" => "Invalid token format"
+        ]);
         exit;
     }
     $token = $tokenParts[1];
@@ -37,16 +43,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = verifyToken($token);
 
     if ($user) {
-        $response = ['status' => 'success', 'message' => 'Token is valid', 'data' => $user];
+        $response = [
+            "status" => 200,
+            "message" => "Token is valid",
+            "data" => $user
+        ];
+        header("HTTP/1.0 200 OK");
     } else {
-        $response = ['status' => 'error', 'message' => 'Invalid or expired token'];
+        $response = [
+            "status" => 401,
+            "message" => "Invalid or expired token"
+        ];
+        header("HTTP/1.0 401 Unauthorized");
     }
 
     header('Content-Type: application/json');
     echo json_encode($response);
 } else {
-    header('Content-Type: application/json');
-    echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
+    $data = [
+        "status" => 405,
+        "message" => "Invalid request method"
+    ];
+    header("HTTP/1.0 405 Method Not Allowed");
+    echo json_encode($data);
 }
 
 ?>

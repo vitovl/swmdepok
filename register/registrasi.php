@@ -34,36 +34,22 @@ function register() {
                 $queryRegisterUser = mysqli_query($conn, $sqlRegisterUser);
 
                 if ($queryRegisterUser) {
-                    $user_id = mysqli_insert_id($conn);
-                    // Pembuatan token
-                    $key = "example_key"; // Ganti dengan kunci rahasia Anda
-                    $expiryTime = time() + (24 * 60 * 60); // 24 jam
-                    $payload = [
-                        'id' => $user_id,
-                        'email' => $email,
-                        'exp' => $expiryTime
-                    ];
-                    $token = \Firebase\JWT\JWT::encode($payload, $key, 'HS256'); // Tambahkan argumen ketiga 'HS256'
-                    // Akhir pembuatan token
-
                     $response = [
                         'status' => 'success',
-                        'message' => 'Registration successful',
-                        'token' => $token
+                        'message' => 'Registration successful. Your account has been created. Please login.'
                     ];
                 } else {
-                    $response = ['status' => 'error', 'message' => 'Registration failed'];
+                    $response = ['status' => 'error 409', 'message' => 'Registration failed'];
                 }
             }
         }
     } else {
-        $response = ['status' => 'error', 'message' => 'Invalid request method'];
+        $response = ['status' => 'error 404', 'message' => 'Invalid request method'];
     }
 
     header('Content-Type: application/json');
     echo json_encode($response);
 }
-register();
 
+register();
 ?>
-    
