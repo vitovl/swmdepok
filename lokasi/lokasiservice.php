@@ -10,7 +10,8 @@ function getLokasiDevice() {
         dd.serial_number, 
         hpd.signalStatus, 
         ldp.latitude, 
-        ldp.longitude FROM lokasi_device_depok ldp 
+        ldp.longitude,
+        ldp.alamat FROM lokasi_device_depok ldp 
         INNER JOIN device_depok dd ON dd.serial_number = ldp.device_name 
         INNER JOIN hasil_parsed_depok hpd ON dd.id = hpd.id_device_depok";
 
@@ -23,7 +24,8 @@ function getLokasiDevice() {
                 "serial_number" => $row['serial_number'],
                 "signalStatus" => $row['signalStatus'],
                 "latitude" => $row['latitude'],
-                "longitude" => $row['longitude']
+                "longitude" => $row['longitude'],
+                "alamat" =>$row['alamat']
             ];
         }
     
