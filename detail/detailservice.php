@@ -23,7 +23,7 @@ function getDetailDevice() {
                     dp.serial_number = '$serial_number'
                 ORDER BY 
                     hp.timestamp DESC
-                LIMIT 30"; // Hanya ambil 3 data terbaru
+                LIMIT 30"; // Ambil 30 data terbaru untuk serial number tertentu
 
         $queryGetDetailDevice = mysqli_query($conn, $sql);
         
@@ -48,7 +48,7 @@ function getDetailDevice() {
             return json_encode($response);
         }
     } else {
-        // Jika parameter serial number tidak diberikan, maka tampilkan semua data dengan batasan 3 data terbaru untuk setiap serial number
+        // Jika parameter serial number tidak diberikan, maka tampilkan semua data dengan batasan 30 data terbaru untuk setiap serial number
         $sql = "SELECT 
                     dp.serial_number, 
                     hp.RSSI,
@@ -60,9 +60,17 @@ function getDetailDevice() {
                     hasil_parsed_depok hp 
                 INNER JOIN 
                     device_depok dp ON hp.id_device_depok = dp.id 
+                INNER JOIN (
+                    SELECT 
+                        id_device_depok, 
+                        MAX(timestamp) AS max_timestamp
+                    FROM 
+                        hasil_parsed_depok
+                    GROUP BY 
+                        id_device_depok
+                ) max_hp ON hp.id_device_depok = max_hp.id_device_depok AND hp.timestamp = max_hp.max_timestamp
                 ORDER BY 
-                    dp.serial_number ASC, 
-                    hp.timestamp DESC";
+                    dp.serial_number ASC";
 
         $queryGetDetailDevice = mysqli_query($conn, $sql);
         
@@ -80,10 +88,10 @@ function getDetailDevice() {
                 $groupedData[$serial_number][] = $row;
             }
 
-            // Ambil hanya 3 data terbaru untuk setiap serial number
+            // Ambil hanya 30 data terbaru untuk setiap serial number
             $limitedData = [];
             foreach ($groupedData as $serial_number => $data) {
-                $limitedData[$serial_number] = array_slice($data, 0, 3); // Ambil 3 data terbaru
+                $limitedData[$serial_number] = array_slice($data, 0, 30); // Ambil 30 data terbaru
             }
 
             $response = [

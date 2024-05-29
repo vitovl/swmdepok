@@ -1,9 +1,5 @@
 <?php
 
-// header('Access-Control-Allow-Headers: Accept, Content-Type');
-// header('Access-Control-Allow-Origin: *');
-// header('Access-Control-Allow-Method: GET, POST, PUT, DELETE');
-// header('Content-Type: application/json');
 
 include "../koneksi.php";
 
@@ -38,18 +34,28 @@ function getAllDataGraphics($limit = 0, $skip = 0) {
     if ($queryGetAllData) {
         $res = [];
         $latestTimestamps = []; // Menyimpan timestamp terbaru untuk setiap serial number
+        $today = date("Y-m-d"); // Mendapatkan tanggal hari ini
+
         while ($row = mysqli_fetch_assoc($queryGetAllData)) {
             $serial_number = $row['serial_number'];
+            $timestamp = $row['timestamp'];
+            $date = date("Y-m-d", strtotime($timestamp));
+
             // Jika serial number belum ada di latestTimestamps atau timestamp lebih baru dari yang ada
-            if (!isset($latestTimestamps[$serial_number]) || $row['timestamp'] > $latestTimestamps[$serial_number]) {
-                // Perbarui data untuk serial number ini
-                $latestTimestamps[$serial_number] = $row['timestamp'];
+            if (!isset($latestTimestamps[$serial_number]) || $timestamp > $latestTimestamps[$serial_number]) {
+                $latestTimestamps[$serial_number] = $timestamp;
+
+                // Menentukan status koneksi
+                $dateDifference = (strtotime($today) - strtotime($date)) / (60 * 60 * 24);
+                $statusConnection = $date === $today ? "Connect" : ($dateDifference <= 5 ? "Connect" : "Disconnect");
+
                 $responseData = [
-                    "serial_number" => $row['serial_number'],
+                    "serial_number" => $serial_number,
                     "signalStatus" => $row['signalStatus'],
                     "rateDataFlow" => $row['rateDataFlow'],
                     "batteryStatus" => $row['batteryStatus'],
-                    "timestamp" => $row['timestamp']
+                    "timestamp" => $timestamp,
+                    "statusConnection" => $statusConnection
                 ];
                 $res[] = $responseData;
             }
@@ -77,5 +83,5 @@ $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 0;
 $skip = isset($_GET['skip']) ? intval($_GET['skip']) : 0;
 
 // Panggil fungsi dengan parameter limit dan skip
-//echo getAllDataGraphics($limit, $skip);
+// echo getAllDataGraphics($limit, $skip);
 ?>
