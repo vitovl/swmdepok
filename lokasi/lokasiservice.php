@@ -11,27 +11,40 @@ function getLokasiDevice() {
         hpd.signalStatus, 
         ldp.latitude, 
         ldp.longitude,
-        ldp.alamat FROM lokasi_device_depok ldp 
-        INNER JOIN device_depok dd ON dd.serial_number = ldp.device_name 
-        INNER JOIN hasil_parsed_depok hpd ON dd.id = hpd.id_device_depok";
+        ldp.alamat 
+    FROM lokasi_device_depok ldp 
+    INNER JOIN device_depok dd ON dd.serial_number = ldp.device_name 
+    INNER JOIN (
+        SELECT id_device_depok, signalStatus
+        FROM hasil_parsed_depok
+        WHERE (id_device_depok, timestamp) IN (
+            SELECT id_device_depok, MAX(timestamp)
+            FROM hasil_parsed_depok
+            GROUP BY id_device_depok
+        )
+    ) hpd ON dd.id = hpd.id_device_depok
+    GROUP BY dd.serial_number";
 
     $resultLocate = mysqli_query($conn, $queryLocate);
     
     if ($resultLocate) {
-        $data = [];
+        $res = [];
         while ($row = mysqli_fetch_assoc($resultLocate)) {
-            $data[] = [
+            $res[] = [
                 "serial_number" => $row['serial_number'],
                 "signalStatus" => $row['signalStatus'],
                 "latitude" => $row['latitude'],
                 "longitude" => $row['longitude'],
-                "alamat" =>$row['alamat']
+                "alamat" => $row['alamat']
             ];
         }
-    
         header("HTTP/1.0 200 OK");
-        header('Content-Type: application/json');
-        echo json_encode($data);
+        $data = [
+            "status" => 200,
+            "message" => "Get all data location is success",
+            "data" => $res,
+        ];
+        return json_encode($data);
     } else {
         $response = [
             "status" => 500,
@@ -39,7 +52,8 @@ function getLokasiDevice() {
         ];
         header("HTTP/1.0 500 Server Error");
         header('Content-Type: application/json');
-        echo json_encode($response);
+        return json_encode($response);
     }
 }
+// getLokasiDevice();
 ?>

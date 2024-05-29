@@ -21,12 +21,5 @@ if ($reqMethod === "POST") {
         include './token.php';
     }
     
-} else {
-    $data = [
-        "status" => 405,
-        "message" => $reqMethod . ' Method not allowed!'
-    ];
-    header("HTTP/1.0 405 Method Not Allowed");
-    echo json_encode($data);
-}
+} 
 ?>

@@ -10,7 +10,7 @@ function register() {
     global $conn;
     $response = [];
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (empty($data["email"]) || !filter_var($data["email"], FILTER_VALIDATE_EMAIL)) {
@@ -27,19 +27,27 @@ function register() {
             $queryCheckUser = mysqli_query($conn, $sqlCheckUser);
 
             if (mysqli_num_rows($queryCheckUser) > 0) {
+                header("HTTP/1.0 400 Bad Request Error");
                 $response = ['status' => 'error', 'message' => 'User already exists. Please login instead.'];
+                echo json_encode($response);
             } else {
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 $sqlRegisterUser = "INSERT INTO user_login (email, password) VALUES ('$email', '$hashedPassword')";
                 $queryRegisterUser = mysqli_query($conn, $sqlRegisterUser);
 
                 if ($queryRegisterUser) {
+                    header("HTTP/1.0 201 Created");
+                    header('Content-Type: application/json');
                     $response = [
                         'status' => 'success',
                         'message' => 'Registration successful. Your account has been created. Please login.'
                     ];
+                    echo json_encode($response);
                 } else {
+                    header("HTTP/1.0 409");
+                    header('Content-Type: application/json');
                     $response = ['status' => 'error 409', 'message' => 'Registration failed'];
+                    echo json_encode($response);
                 }
             }
         }
@@ -47,8 +55,7 @@ function register() {
         $response = ['status' => 'error 404', 'message' => 'Invalid request method'];
     }
 
-    header('Content-Type: application/json');
-    echo json_encode($response);
+    
 }
 
 register();

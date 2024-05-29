@@ -9,16 +9,17 @@ $headerSerialNumber = array('620', '702', '602', '682', '692');
 
 function getSignalStatus($RSSI, $SNR)
 {
-    if ($RSSI > -115 || $SNR > -2) {
+    if ($RSSI > -115 && $SNR > -2) {
         return "bagus";
-    } elseif ($RSSI > -118 || $RSSI <= -115 || $SNR > -5 || $SNR <= -2) {
+    } elseif (($RSSI > -118 && $SNR > -5) && ($RSSI <= -115 || $SNR <= -2)) {
         return "sedang";
-    } elseif ($RSSI > -120 || $RSSI <= -118 || $SNR <= -5) {
+    } elseif ($RSSI <= -118 || $SNR <= -5) {
         return "buruk";
     } else {
         return "Tidak dapat menentukan";
     }
 }
+
 
 function saveDataAntaresByPayload($chunk)
 {
