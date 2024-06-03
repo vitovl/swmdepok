@@ -1,7 +1,6 @@
 <?php
 include '../koneksi.php';
 
-
 function getSerialNumbersFromNewTable() {
     global $conn;
     $serialNumbers = [];
@@ -14,7 +13,7 @@ function getSerialNumbersFromNewTable() {
     }
     while ($row = mysqli_fetch_assoc($result)) {
         $serialNumbers[] = $row['serial_number'];
-    }  // Menampilkan jumlah nomor seri yang berhasil dibaca
+    }
     return $serialNumbers;
 }
 
@@ -27,6 +26,7 @@ function isDeviceExist($deviceId) {
 
     return $checkRow['count'] > 0;
 }
+
 function saveDataAntaresByDeviceId() {
     global $conn;
     $mh = curl_multi_init();
@@ -75,6 +75,13 @@ function saveDataAntaresByDeviceId() {
             if ($response && isset($deviceDataParsed['m2m:cin']) && isset($deviceDataParsed['m2m:cin']['con'])) {
                 $conParsed = json_decode($deviceDataParsed['m2m:cin']['con'], true);
                 $payloadValue = $conParsed['data'];
+
+                // Cek apakah payload dimulai dengan '6f' dan tidak berisi 'NO PAYLOAD'
+                if (strpos($payloadValue, '6f') !== 0 || strpos($payloadValue, 'NO PAYLOAD') !== false) {
+                    echo "Invalid payload for device $serialNumber: $payloadValue\n";
+                    continue; // Skip to the next device if payload is invalid
+                }
+
                 $devEuiValue = $conParsed['devEui'];
                 $radio = $conParsed['radio']['hardware'];
                 $RSSI = $radio['rssi'];
@@ -108,8 +115,7 @@ function saveDataAntaresByDeviceId() {
             }
         }
     }
-    // Menampilkan jumlah nomor seri yang telah diproses
-    echo "Total serial  numbers processed: " . count($serialNumbers) . "\n";
+    echo "Total serial numbers processed: " . count($serialNumbers) . "\n";
     curl_multi_close($mh);
 }
 
@@ -126,7 +132,7 @@ function convertAntaresTimeToTimestamp($antaresTime) {
     $timestamp = mktime($hour, $minute, $second, $month, $day, $year);
 
     return date('Y-m-d H:i:s', $timestamp); // Mengembalikan timestamp dalam format yang sesuai
-}   
+}
 
 // Jalankan kode secara terus menerus dengan interval 10 menit
 // while (true) {

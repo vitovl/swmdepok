@@ -158,7 +158,7 @@ while (true) {
 
     getAllDevicesData();
     saveDataAntaresByDeviceId();
-    // Tunggu 30 detik sebelum mengambil data kembali
+    // Tunggu 30 detik sebelum mengambil data kembali   
     sleep(30); // 30 detik = 0,5 menit
 }
 

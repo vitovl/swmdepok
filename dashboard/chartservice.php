@@ -47,7 +47,7 @@ function getAllDataGraphics($limit = 0, $skip = 0) {
 
                 // Menentukan status koneksi
                 $dateDifference = (strtotime($today) - strtotime($date)) / (60 * 60 * 24);
-                $statusConnection = $date === $today ? "Connect" : ($dateDifference <= 5 ? "Connect" : "Disconnect");
+                $statusConnection = $date === $today ? "Connect" : ($dateDifference <= 2 ? "Connect" : "Disconnect");
 
                 $responseData = [
                     "serial_number" => $serial_number,

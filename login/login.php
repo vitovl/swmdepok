@@ -1,17 +1,24 @@
 <?php
 include "../koneksi.php";
+require '../vendor/autoload.php';
 
+use \Firebase\JWT\JWT;
 
 function login() {
     global $conn;
     $response = [];
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Membaca dan menguraikan data JSON
         $data = json_decode(file_get_contents('php://input'), true);
 
-        if (empty($data["email"])) {
+        // Tambahkan log untuk debug
+        error_log(print_r($data, true));
+
+        // Memastikan data JSON diterima dan diurai dengan benar
+        if (!isset($data["email"]) || empty($data["email"])) {
             $response = ['status' => 'error', 'message' => 'Please Enter Your Email Details'];
-        } else if (empty($data["password"])) {
+        } else if (!isset($data["password"]) || empty($data["password"])) {
             $response = ['status' => 'error', 'message' => 'Please Enter Your Password Details'];
         } else {
             $email = mysqli_real_escape_string($conn, $data["email"]);
@@ -31,7 +38,7 @@ function login() {
                         'email' => $user['email'],
                         'exp' => $expiryTime
                     ];
-                    $token = \Firebase\JWT\JWT::encode($payload, $key, 'HS256'); // Tambahkan algoritma enkripsi
+                    $token = JWT::encode($payload, $key, 'HS256'); // Tambahkan algoritma enkripsi
                     // Akhir kode pembuatan token
 
                     $response = [
@@ -40,19 +47,22 @@ function login() {
                         'token' => $token
                     ];
                 } else {
-                    $response = ['status' => 'error 409', 'message' => 'Invalid Email or Password'];
+                    header("HTTP/1.0 400 Bad Request");
+                    $response = ['status' => 'error', 'message' => 'Invalid Email or Password'];
                 }
             } else {
-                $response = ['status' => 'error 410', 'message' => 'User not found. Please register first.'];
+                header("HTTP/1.0 404 Not Found");
+                $response = ['status' => 'error', 'message' => 'User not found. Please register first.'];
             }
         }
-    } else {
-        $response = ['status' => 'error 404', 'message' => 'Invalid request method'];
-    }
+    } 
+    // else {
+    //     header("HTTP/1.0 405 Method Not Allowed");
+    //     $response = ['status' => 'error', 'message' => 'Invalid request method'];
+    // }
 
     header('Content-Type: application/json');
     echo json_encode($response);
 }
 login();
-
 ?>

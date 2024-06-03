@@ -11,11 +11,12 @@ function getLokasiDevice() {
         hpd.signalStatus, 
         ldp.latitude, 
         ldp.longitude,
-        ldp.alamat 
-    FROM lokasi_device_depok ldp 
-    INNER JOIN device_depok dd ON dd.serial_number = ldp.device_name 
-    INNER JOIN (
-        SELECT id_device_depok, signalStatus
+        ldp.alamat,
+        hpd.timestamp 
+        FROM lokasi_device_depok ldp 
+        INNER JOIN device_depok dd ON dd.serial_number = ldp.device_name 
+        INNER JOIN (
+        SELECT id_device_depok, signalStatus, timestamp
         FROM hasil_parsed_depok
         WHERE (id_device_depok, timestamp) IN (
             SELECT id_device_depok, MAX(timestamp)
@@ -27,15 +28,32 @@ function getLokasiDevice() {
 
     $resultLocate = mysqli_query($conn, $queryLocate);
     
+    function getStatusConnection($timestamp) {
+        $currentDate = new DateTime();
+        $dataDate = new DateTime($timestamp);
+    
+        $interval = $currentDate->diff($dataDate)->days;
+    
+        if ($dataDate->format('Y-m-d') === $currentDate->format('Y-m-d')) {
+            return "Connect";
+        } elseif ($interval <= 2) {
+            return "Connect";
+        } else {
+            return "Disconnect";
+        }
+    }
+
     if ($resultLocate) {
         $res = [];
         while ($row = mysqli_fetch_assoc($resultLocate)) {
+            $statusConnection = getStatusConnection($row['timestamp']);
             $res[] = [
                 "serial_number" => $row['serial_number'],
                 "signalStatus" => $row['signalStatus'],
                 "latitude" => $row['latitude'],
                 "longitude" => $row['longitude'],
-                "alamat" => $row['alamat']
+                "alamat" => $row['alamat'],
+                "statusConnection" => $statusConnection
             ];
         }
         header("HTTP/1.0 200 OK");
@@ -44,6 +62,7 @@ function getLokasiDevice() {
             "message" => "Get all data location is success",
             "data" => $res,
         ];
+        header('Content-Type: application/json');
         return json_encode($data);
     } else {
         $response = [
@@ -55,5 +74,9 @@ function getLokasiDevice() {
         return json_encode($response);
     }
 }
-// getLokasiDevice();
+
+
+
+// Uncomment the following line to call the function and see the output
+// echo getLokasiDevice();
 ?>

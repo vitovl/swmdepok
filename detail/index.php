@@ -61,12 +61,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode($response);
         exit; // Add exit to stop further execution
     }
-} else {
-    $data = [
-        "status" => 405,
-        "message" => "Invalid request method"
-    ];
-    header("HTTP/1.0 405 Method Not Allowed");
-    echo json_encode($data);
-}
+} 
+// else {
+//     $data = [
+//         "status" => 405,
+//         "message" => "Invalid request method"
+//     ];
+//     header("HTTP/1.0 405 Method Not Allowed");
+//     echo json_encode($data);
+// }
 ?>
