@@ -58,5 +58,4 @@ function register() {
     
 }
 
-register();
 ?>

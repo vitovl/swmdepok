@@ -5,7 +5,6 @@ function getLokasiDevice() {
     set_time_limit(0); // Ini biasanya tidak diperlukan, hanya jika prosesnya memakan waktu lama.
     global $conn;
 
-    // Pastikan kolom yang di-SELECT dan di-JOIN sudah diindeks.
     $queryLocate = "SELECT 
         dd.serial_number, 
         hpd.signalStatus, 
@@ -27,13 +26,13 @@ function getLokasiDevice() {
     GROUP BY dd.serial_number";
 
     $resultLocate = mysqli_query($conn, $queryLocate);
-    
+
     function getStatusConnection($timestamp) {
         $currentDate = new DateTime();
         $dataDate = new DateTime($timestamp);
-    
+
         $interval = $currentDate->diff($dataDate)->days;
-    
+
         if ($dataDate->format('Y-m-d') === $currentDate->format('Y-m-d')) {
             return "Connect";
         } elseif ($interval <= 2) {
@@ -51,32 +50,25 @@ function getLokasiDevice() {
                 "serial_number" => $row['serial_number'],
                 "signalStatus" => $row['signalStatus'],
                 "latitude" => $row['latitude'],
-                "longitude" => $row['longitude'],
+                "longitude" => $row['longitude'],   
                 "alamat" => $row['alamat'],
                 "statusConnection" => $statusConnection
             ];
         }
         header("HTTP/1.0 200 OK");
-        $data = [
+        header('Content-Type: application/json');
+        return json_encode([
             "status" => 200,
             "message" => "Get all data location is success",
-            "data" => $res,
-        ];
-        header('Content-Type: application/json');
-        return json_encode($data);
+            "data" => $res
+        ]);
     } else {
-        $response = [
+        header("HTTP/1.0 500 Internal Server Error");
+        header('Content-Type: application/json');
+        return json_encode([
             "status" => 500,
             "message" => "Internal server error"
-        ];
-        header("HTTP/1.0 500 Server Error");
-        header('Content-Type: application/json');
-        return json_encode($response);
+        ]);
     }
 }
-
-
-
-// Uncomment the following line to call the function and see the output
-// echo getLokasiDevice();
 ?>
