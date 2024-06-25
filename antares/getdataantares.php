@@ -74,7 +74,7 @@ function saveDataAntaresByPayload($chunk)
                     }
 
                     // Periksa perubahan nilai baterai
-                    if (count($batteryValues) == 3) {
+                    if (count($batteryValues) == 30) {
                         $batteryChange = abs(max($batteryValues) - min($batteryValues));
                         $statusBattery = ($batteryChange >= 0.2) ? "Drop" : "Stabil";
                     } else {
@@ -99,7 +99,7 @@ function saveDataAntaresByPayload($chunk)
                     }
 
                     // Periksa perubahan nilai baterai
-                    if (count($batteryValues) == 3) {
+                    if (count($batteryValues) == 30) {
                         $batteryChange = abs(max($batteryValues) - min($batteryValues));
                         $statusBattery = ($batteryChange >= 0.2) ? "Drop" : "Stabil";
                     } else {
