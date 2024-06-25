@@ -65,21 +65,21 @@ function saveDataAntaresByPayload($chunk)
                     $forwardFlowValue = hexdec(str_replace(' ', '', $forwardFlow_reversed)) / 1000;
                     $batteryValue = hexdec($battery) / 10;
 
-                    // Hitung perubahan nilai baterai dari 3 timestamp terbaru
-                    $batteryChangeQuery = "SELECT batteryValue FROM hasil_parsed_depok WHERE id_device_depok = '$deviceId' ORDER BY timestamp DESC LIMIT 30";
-                    $batteryChangeResult = mysqli_query($conn, $batteryChangeQuery);
-                    $batteryValues = [];
-                    while ($batteryChangeRow = mysqli_fetch_assoc($batteryChangeResult)) {
-                        $batteryValues[] = $batteryChangeRow['batteryValue'];
-                    }
+                        // Hitung perubahan nilai baterai dari 3 timestamp terbaru
+                        $batteryChangeQuery = "SELECT batteryValue FROM hasil_parsed_depok WHERE id_device_depok = '$deviceId' ORDER BY timestamp DESC LIMIT 30";
+                        $batteryChangeResult = mysqli_query($conn, $batteryChangeQuery);
+                        $batteryValues = [];
+                        while ($batteryChangeRow = mysqli_fetch_assoc($batteryChangeResult)) {
+                            $batteryValues[] = $batteryChangeRow['batteryValue'];
+                        }
 
-                    // Periksa perubahan nilai baterai
-                    if (count($batteryValues) == 30) {
-                        $batteryChange = abs(max($batteryValues) - min($batteryValues));
-                        $statusBattery = ($batteryChange >= 0.2) ? "Drop" : "Stabil";
-                    } else {
-                        $statusBattery = ($batteryValue >= 3.4) ? "Stabil" : "Drop";
-                    }
+                        // Periksa perubahan nilai baterai
+                        if (count($batteryValues) == 30) {
+                            $batteryChange = abs(max($batteryValues) - min($batteryValues));
+                            $statusBattery = ($batteryChange > 0.2) ? "Drop" : "Stabil";
+                        } else {
+                            $statusBattery = ($batteryValue > 3.4) ? "Stabil" : "Drop";
+                        }
                 } else if (in_array(substr($serialNumber, 0, 3), array('682', '692'))) {
                     $forwardFlow = substr($payloadValue, 12, 8);
                     $battery = strtoupper(substr($payloadValue, 76, 2));
@@ -101,9 +101,9 @@ function saveDataAntaresByPayload($chunk)
                     // Periksa perubahan nilai baterai
                     if (count($batteryValues) == 30) {
                         $batteryChange = abs(max($batteryValues) - min($batteryValues));
-                        $statusBattery = ($batteryChange >= 0.2) ? "Drop" : "Stabil";
+                        $statusBattery = ($batteryChange > 0.2) ? "Drop" : "Stabil";
                     } else {
-                        $statusBattery = ($batteryValue >= 3.4) ? "Stabil" : "Drop";
+                        $statusBattery = ($batteryValue > 3.4) ? "Stabil" : "Drop";
                     }
                 }
 
